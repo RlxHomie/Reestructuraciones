@@ -13,7 +13,7 @@ function debounce(func, wait) {
 
 function calcularDeuda(sumaOriginal, sumaDescontada, nCuotas) {
   const ahorro = sumaOriginal - sumaDescontada;
-  const comisionExito = 0.25 * ahorro; // 25% de lo que ahorras
+  const comisionExito = 0.25 * ahorro;     // 25% de lo que ahorras
   const comisionGestion = 0.10 * sumaOriginal; // 10% de la deuda original
   const totalAPagar = sumaDescontada + comisionExito + comisionGestion;
   const cuotaMensual = totalAPagar / nCuotas;
@@ -115,6 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Preparar tabla con 1 fila inicial
   agregarFila();
+
+  // BOTÓN CONTRATAR: Lo reemplazamos para llamar a Google Sheets en vez de OneDrive
+  const btnContratar = document.getElementById('btnContratar');
+  btnContratar.replaceWith(btnContratar.cloneNode(true));
+  document.getElementById('btnContratar').addEventListener('click', enviarDatosAGoogleSheets);
 });
 
 /**********************************************************
@@ -314,7 +319,7 @@ function calcular() {
     <p><strong>Cuota Mensual:</strong> €${cuotaMensual.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
   `;
 
-  // Actualizar la vista del plan
+  // Actualizar el plan de liquidación
   planContainerOuter.style.display = 'block';
   planNombreDeudor.textContent = nombreDeudor;
   planNumDeudas.textContent = numeroDeudas;
@@ -533,14 +538,77 @@ function descargarPlan() {
 }
 
 /**********************************************************
- * INTEGRACIÓN CON ONEDRIVE (MSAL)
+ * INTEGRACIÓN CON GOOGLE SHEETS (SUSTITUIR MSAL/ONEDRIVE)
  **********************************************************/
+function enviarDatosAGoogleSheets() {
+  // 1. Recolectar datos del plan actual (coincidiendo con las columnas en tu Apps Script)
+  const folio = planFolio.textContent.trim();
+  const fecha = planFecha.textContent.trim();
+  const nombreDeudor = planNombreDeudor.textContent.trim();
+  const numeroDeudas = planNumDeudas.textContent.trim();
+  // Deuda Original (quita '€')
+  const deudaOriginal = planDeudaTotal.textContent.replace('€','').trim();
+  // Deuda Descontada (quita '€')
+  const deudaDescontada = planLoQuePagarias.textContent.replace('€','').trim();
+  // Ahorro (quita '€')
+  const ahorro = planAhorro.textContent.replace('€','').trim();
+  // Extraer total a pagar del resultado
+  let totalAPagar = document.getElementById('resultadoTotalAPagar')
+                      .textContent.split('€')[1]?.trim() || 0;
+
+  // 2. Construir objeto con esos campos
+  const datosPlan = {
+    folio,
+    fecha,
+    nombreDeudor,
+    numeroDeudas,
+    deudaOriginal,
+    deudaDescontada,
+    ahorro,
+    totalAPagar
+  };
+
+  // 3. Convertir a x-www-form-urlencoded
+  const formData = new URLSearchParams();
+  for (const key in datosPlan) {
+    formData.append(key, datosPlan[key]);
+  }
+
+  // 4. URL de tu Web App de Google Apps Script
+  const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxLEVjy-I3VrnhJKFW9NORhI1QoHJ3LDgDIcHg0OccsAIULynDTVzgRhUXn1XJmFfa1/exec";
+
+  // 5. Hacer el POST
+  fetch(GOOGLE_SHEET_ENDPOINT, {
+    method: "POST",
+    mode: "cors", // O "no-cors" si surge problema
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  })
+  .then(response => response.text())
+  .then(data => {
+    if (data.includes("OK")) {
+      alert("¡Plan contratado y enviado a Google Sheets!");
+    } else {
+      alert("Error al enviar datos: " + data);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error de conexión o CORS al enviar datos a Google Sheets.");
+  });
+}
+
+/**********************************************************
+// SI NO QUIERES USAR ONEDRIVE, COMENTAR O ELIMINAR:
+**********************************************************/
+/*
 // Configuración para Azure y OneDrive
-// *La ruta 'excelFilePath' DEBE ser la ruta en OneDrive, no local. Por ejemplo: '/Documents/PlanesContratados.xlsx'
 const onedriveConfig = {
   clientId: '70c93901-d8a3-46e0-a4ac-ff1100a9b04e',
-  redirectUri: 'https://rlxhomie.github.io/Reestructuraciones/', // Debe coincidir con la URI configurada en Azure
-  excelFilePath: '/Documents/PlanesContratados.xlsx', // EJEMPLO de ruta en OneDrive
+  redirectUri: 'https://rlxhomie.github.io/Reestructuraciones/',
+  excelFilePath: '/Documents/PlanesContratados.xlsx',
   worksheetName: 'Planes',
   scopes: ['Files.ReadWrite', 'Sites.ReadWrite.All'],
 };
@@ -552,140 +620,13 @@ const msalInstance = new msal.PublicClientApplication({
   },
 });
 
-// Botón Contratar
-const btnContratar = document.getElementById('btnContratar');
-btnContratar.replaceWith(btnContratar.cloneNode(true));
-document.getElementById('btnContratar').addEventListener('click', autenticarYEnviarOneDrive);
+// Botón Contratar (Ya no usar OneDrive):
+// document.getElementById('btnContratar').addEventListener('click', autenticarYEnviarOneDrive);
 
-async function autenticarYEnviarOneDrive() {
-  try {
-    const loginResponse = await msalInstance.loginPopup({ scopes: onedriveConfig.scopes });
-    if (!loginResponse.accessToken) {
-      throw new Error('No se obtuvo token de acceso');
-    }
-    await enviarDatosAOneDriveExcel(loginResponse.accessToken);
-  } catch (err) {
-    alert('Error al autenticar con OneDrive: ' + err);
-    console.error(err);
-  }
-}
+async function autenticarYEnviarOneDrive() { ... }
+async function enviarDatosAOneDriveExcel(token) { ... }
+function recopilarDatosPlan() { ... }
 
-async function enviarDatosAOneDriveExcel(token) {
-  mostrarIndicadorCarga(true);
+function mostrarIndicadorCarga(mostrar) { ... }
+*/
 
-  // Recolectar datos actuales del plan
-  const datosPlan = recopilarDatosPlan();
-  const filaExcel = [
-    datosPlan.folio,
-    datosPlan.fecha,
-    datosPlan.nombreDeudor,
-    datosPlan.numeroDeudas,
-    datosPlan.deudaOriginal,
-    datosPlan.deudaDescontada,
-    datosPlan.ahorro,
-    datosPlan.totalAPagar,
-    datosPlan.cuotaMensual,
-    datosPlan.numeroCuotas,
-    datosPlan.descuentoTotal,
-    datosPlan.comisionGestion,
-    datosPlan.comisionExito,
-    JSON.stringify(datosPlan.detallesDeudas),
-    datosPlan.asesor,
-    datosPlan.emailAsesor,
-    new Date().toISOString(),
-  ];
-
-  // Endpoint Graph para insertar filas
-  // *OJO: 'excelFilePath' debe apuntar a un archivo en OneDrive, no ruta local
-  const url = `https://graph.microsoft.com/v1.0/me/drive/root:${onedriveConfig.excelFilePath}:/workbook/worksheets('${onedriveConfig.worksheetName}')/tables/Table1/rows/add`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ values: [filaExcel] }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Error al enviar datos a Excel: ' + (await response.text()));
-    }
-
-    alert('Plan contratado y registrado en OneDrive Excel correctamente.');
-    // Opcional: descargar PDF tras contratar
-    descargarPlan();
-  } catch (err) {
-    alert('Error al enviar datos a OneDrive: ' + err);
-    console.error(err);
-  } finally {
-    mostrarIndicadorCarga(false);
-  }
-}
-
-// Recolectar datos del plan (lo que se muestra en la sección final)
-function recopilarDatosPlan() {
-  const deudaOriginalNum = parseFloat(planDeudaTotal.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
-  const loQuePagariasNum = parseFloat(planLoQuePagarias.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
-  const ahorroNum = parseFloat(planAhorro.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
-  // Adaptar: si en #resultadoFinal no tienes un <strong> con el total, ajusta la query
-  const totalAPagarTexto = document.querySelector('#resultadoFinal p:nth-of-type(5) strong, #resultadoTotalAPagar');
-  let totalAPagarNum = 0;
-  if (totalAPagarTexto && totalAPagarTexto.textContent.includes('€')) {
-    totalAPagarNum = parseFloat(totalAPagarTexto.textContent.split('€')[1].trim().replaceAll('.', '').replace(',', '.'));
-  }
-  
-  const cuotaMensualNum = parseFloat(planCuotaMensual.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
-  const descuentoPorc = parseFloat(planDescuentoTotal.textContent.replace('%','').replace(',', '.')) || 0;
-  const numCuotasNum = parseInt(inputNumCuotas.value) || 12;
-
-  // Recolectar filas de la tabla principal para tener detalles
-  const filas = Array.from(tablaDeudasBody.querySelectorAll('tr'));
-  const detallesDeudas = filas.map((fila) => {
-    return {
-      numeroContrato: (fila.querySelector('td:nth-child(1) input')?.value || ''),
-      tipoProducto: (fila.querySelector('td:nth-child(2) input')?.value || ''),
-      entidad: (fila.querySelector('td:nth-child(3) select')?.value || ''),
-      deudaOriginal: parseFloat(fila.querySelector('td:nth-child(4) input')?.value) || 0,
-      porcentajeDescuento: parseFloat(fila.querySelector('td:nth-child(5) input')?.value) || 0,
-      deudaConDescuento: parseFloat(fila.querySelector('td:nth-child(6) span')?.textContent) || 0,
-    };
-  });
-
-  return {
-    folio: planFolio.textContent,
-    fecha: planFecha.textContent,
-    nombreDeudor: planNombreDeudor.textContent,
-    numeroDeudas: parseInt(planNumDeudas.textContent) || 0,
-    deudaOriginal: deudaOriginalNum,
-    deudaDescontada: loQuePagariasNum,
-    ahorro: ahorroNum,
-    totalAPagar: totalAPagarNum,
-    cuotaMensual: cuotaMensualNum,
-    numeroCuotas: numCuotasNum,
-    descuentoTotal: descuentoPorc,
-    comisionGestion: parseFloat(document.getElementById('plan-comision-gestion').textContent.replaceAll('.', '').replace(',', '.')) || 0,
-    comisionExito: parseFloat(document.getElementById('plan-comision-exito').textContent.replaceAll('.', '').replace(',', '.')) || 0,
-    asesor: document.getElementById('plan-asesor').textContent,
-    emailAsesor: document.getElementById('plan-asesor-email').textContent,
-    detallesDeudas,
-  };
-}
-
-// Mostrar / ocultar indicador de carga
-function mostrarIndicadorCarga(mostrar) {
-  let indicador = document.getElementById('indicadorCarga');
-  if (!indicador && mostrar) {
-    indicador = document.createElement('div');
-    indicador.id = 'indicadorCarga';
-    indicador.className = 'indicador-carga';
-    indicador.innerHTML = `
-      <div class="spinner"></div>
-      <p>Enviando datos a OneDrive...</p>
-    `;
-    document.body.appendChild(indicador);
-  } else if (indicador && !mostrar) {
-    document.body.removeChild(indicador);
-  }
-}
