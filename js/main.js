@@ -538,7 +538,7 @@ function descargarPlan() {
 // Configuración para Azure y OneDrive
 const onedriveConfig = {
   clientId: '70c93901-d8a3-46e0-a4ac-ff1100a9b04e', // TU Client ID
-  redirectUri: window.location.origin,
+  redirectUri: https://rlxhomie.github.io/Reestructuraciones/,
   excelFilePath: 'C:/Users/ramon/OneDrive - DMD Asesores Legales S.L/1 - REESTRUCTURACIONES/Reestructuraciones/PlanesContratados.xlsx', // Ajustar ruta
   worksheetName: 'Planes',
   scopes: ['Files.ReadWrite', 'Sites.ReadWrite.All'],
