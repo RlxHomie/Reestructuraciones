@@ -8,7 +8,7 @@
   <!-- CHART.JS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Biblioteca MSAL de Microsoft para autenticación -->
+  <!-- Biblioteca MSAL de Microsoft para autenticación (ya no se usa, pero queda) -->
   <script src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.min.js"></script>
   
   <!-- Hoja de estilos externa -->
@@ -18,7 +18,6 @@
   <!-- ====================== CONTENEDOR PRINCIPAL ====================== -->
   <div class="contenedor-simulador">
     <div class="header-simulador">
-      <!-- Reemplaza el src base64 por tu logo o imagen real -->
       <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" />
       <h1>DMD - Simulador de Reestructuración</h1>
     </div>
@@ -87,11 +86,9 @@
 
   <!-- ====================== CONTENEDOR PLAN DE LIQUIDACIÓN ====================== -->
   <div class="plan-container-outer" id="planContainerOuter">
-    <!-- Botones adicionales dentro del plan -->
     <button class="btn-descargar-plan" id="btnDescargarPlan" aria-label="Descargar PDF">Descargar PDF</button>
     <button class="btn btn-primario" id="btnContratar" aria-label="Contratar Plan">Contratar Plan</button>
     
-    <!-- Contenido del plan en sí -->
     <div id="plan-de-liquidacion">
       <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" style="margin: 0 auto 20px auto;" />
       <div class="header">DMD asesores</div>
@@ -111,7 +108,6 @@
       
       <div class="plan-container">
         <div class="plan-left">
-          <!-- Gráfico con Chart.js -->
           <div class="chart">
             <canvas id="myChart"></canvas>
           </div>
@@ -124,7 +120,6 @@
           </div>
         </div>
         <div class="plan-right">
-          <!-- Tarjetas con información resumida -->
           <div class="plan-card">
             <p>La cuota mensual</p>
             <h4 id="plan-cuota-mensual">€0.00</h4>
@@ -157,25 +152,12 @@
         </table>
       </div>
       
-      <!-- Disclaimer / Pie de página -->
       <div class="disclaimer">
-        <p>
-          La reducción de la deuda con las entidades financieras es aproximada y se calcula conforme a nuestra experiencia, considerando la naturaleza de la entidad (regulada o no regulada), el tipo de crédito y las garantías asociadas.
-        </p>
-        <p>
-          Se aclara expresamente que: Cualquier variación en la Deuda Total Inicial (DTI) declarada por el cliente estará sujeta a la validación y criterio discrecional de la entidad acreedora correspondiente. De existir una discrepancia sustancial, podría implicar la modificación del Plan de Liquidación propuesto, previa notificación al cliente.
-        </p>
-        <p>
-          Los datos contenidos en este documento tienen carácter informativo y reflejan una proyección estimada, sujeta a cambios derivados de circunstancias externas o actualizaciones contractuales. Todos los montos indicados incluyen IVA.
-        </p>
-        <p>
-          Comisión Administrativa Mensual: El plan incluye una comisión de gestión de DMD, con un monto total de
-          <strong>€<span id="plan-comision-gestion">0.00</span></strong>, distribuido en partes iguales a lo largo de los
-          <strong><span id="plan-num-cuotas">0</span></strong> meses de vigencia del acuerdo. La primera cuota incluye un cargo único por comisión de apertura al programa, equivalente al monto de un mes de ahorro.
-        </p>
-        <p>
-          Comisión de Éxito: Se aplicará una comisión de <strong>€<span id="plan-comision-exito">0.00</span></strong> que equivale al 25.00% del importe reducido en cada operación de liquidación acordada con las entidades. Este cargo se calculará y facturará tras la confirmación de cada acuerdo de reducción.
-        </p>
+        <p>La reducción de la deuda con las entidades financieras es aproximada y se calcula conforme a nuestra experiencia...</p>
+        <p>Se aclara expresamente que: Cualquier variación en la Deuda Total Inicial (DTI)...</p>
+        <p>Los datos contenidos en este documento tienen carácter informativo...</p>
+        <p>Comisión Administrativa Mensual: El plan incluye una comisión de gestión...</p>
+        <p>Comisión de Éxito: Se aplicará una comisión de ...</p>
       </div>
       <div class="footer">
         <div class="asesor-info">
@@ -213,9 +195,7 @@
     </button>
   </div>
   
-  <!-- =======================================================
-       Librerías para generar PDF (ubicadas en la carpeta .libs)
-  ======================================================= -->
+  <!-- Librerías para generar PDF (carpeta .libs) -->
   <script src="./.libs/html2canvas.min.js"></script>
   <script src="./.libs/jspdf.umd.min.js"></script>
   <script src="./.libs/html2pdf.bundle.min.js"></script>
