@@ -536,10 +536,11 @@ function descargarPlan() {
  * INTEGRACIÓN CON ONEDRIVE (MSAL)
  **********************************************************/
 // Configuración para Azure y OneDrive
+// *La ruta 'excelFilePath' DEBE ser la ruta en OneDrive, no local. Por ejemplo: '/Documents/PlanesContratados.xlsx'
 const onedriveConfig = {
-  clientId: '70c93901-d8a3-46e0-a4ac-ff1100a9b04e', // TU Client ID
-  redirectUri: https://rlxhomie.github.io/Reestructuraciones/,
-  excelFilePath: 'C:/Users/ramon/OneDrive - DMD Asesores Legales S.L/1 - REESTRUCTURACIONES/Reestructuraciones/PlanesContratados.xlsx', // Ajustar ruta
+  clientId: '70c93901-d8a3-46e0-a4ac-ff1100a9b04e',
+  redirectUri: 'https://rlxhomie.github.io/Reestructuraciones/', // Debe coincidir con la URI configurada en Azure
+  excelFilePath: '/Documents/PlanesContratados.xlsx', // EJEMPLO de ruta en OneDrive
   worksheetName: 'Planes',
   scopes: ['Files.ReadWrite', 'Sites.ReadWrite.All'],
 };
@@ -553,7 +554,6 @@ const msalInstance = new msal.PublicClientApplication({
 
 // Botón Contratar
 const btnContratar = document.getElementById('btnContratar');
-// Evitar listeners duplicados si se recarga
 btnContratar.replaceWith(btnContratar.cloneNode(true));
 document.getElementById('btnContratar').addEventListener('click', autenticarYEnviarOneDrive);
 
@@ -595,13 +595,15 @@ async function enviarDatosAOneDriveExcel(token) {
     new Date().toISOString(),
   ];
 
+  // Endpoint Graph para insertar filas
+  // *OJO: 'excelFilePath' debe apuntar a un archivo en OneDrive, no ruta local
   const url = `https://graph.microsoft.com/v1.0/me/drive/root:${onedriveConfig.excelFilePath}:/workbook/worksheets('${onedriveConfig.worksheetName}')/tables/Table1/rows/add`;
 
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ values: [filaExcel] }),
@@ -627,7 +629,12 @@ function recopilarDatosPlan() {
   const deudaOriginalNum = parseFloat(planDeudaTotal.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
   const loQuePagariasNum = parseFloat(planLoQuePagarias.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
   const ahorroNum = parseFloat(planAhorro.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
-  const totalAPagarNum = parseFloat(document.querySelector('#resultadoFinal strong + strong, #resultadoTotalAPagar').textContent?.split('€')[1]?.trim()?.replaceAll('.', '')?.replace(',', '.') || 0) || 0;
+  // Adaptar: si en #resultadoFinal no tienes un <strong> con el total, ajusta la query
+  const totalAPagarTexto = document.querySelector('#resultadoFinal p:nth-of-type(5) strong, #resultadoTotalAPagar');
+  let totalAPagarNum = 0;
+  if (totalAPagarTexto && totalAPagarTexto.textContent.includes('€')) {
+    totalAPagarNum = parseFloat(totalAPagarTexto.textContent.split('€')[1].trim().replaceAll('.', '').replace(',', '.'));
+  }
   
   const cuotaMensualNum = parseFloat(planCuotaMensual.textContent.replace('€','').replaceAll('.', '').replace(',', '.')) || 0;
   const descuentoPorc = parseFloat(planDescuentoTotal.textContent.replace('%','').replace(',', '.')) || 0;
