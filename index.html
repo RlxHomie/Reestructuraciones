@@ -3,33 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador de Reestructuración de Deuda - DMD Asesores</title>
+  <title>Simulador de Reestructuración - DMD</title>
   
   <!-- CHART.JS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- (Opcional) Biblioteca MSAL de Microsoft para autenticación, no utilizada ahora -->
+  <!-- (Opcional) MSAL, no usado ahora -->
   <script src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.min.js"></script>
   
-  <!-- Hoja de estilos externa -->
+  <!-- Estilos -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <!-- ====================== CONTENEDOR PRINCIPAL ====================== -->
   <div class="contenedor-simulador">
     <div class="header-simulador">
       <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" />
       <h1>DMD - Simulador de Reestructuración</h1>
     </div>
     
-    <!-- Botón para mostrar/ocultar la gestión de entidades -->
     <div class="toggle-container">
-      <button class="btn btn-secundario" id="btnToggleEntidades" aria-label="Mostrar/Ocultar Entidades">
-        Mostrar Administrar Entidades
-      </button>
+      <button class="btn btn-secundario" id="btnToggleEntidades">Mostrar Administrar Entidades</button>
     </div>
-    
-    <!-- Sección de Administrar Entidades (oculta por defecto) -->
+
     <div class="gestor-entidades" id="entidadesContainer" style="display: none;">
       <h2>Administrar Entidades</h2>
       <div class="campo">
@@ -39,14 +34,12 @@
       <button class="btn btn-primario" id="btnAgregarEntidad">Agregar entidad</button>
       <ul id="listaEntidades"></ul>
     </div>
-    
-    <!-- Campo para el nombre del deudor/cliente -->
+
     <div class="campo">
       <label for="nombreDeudor">Nombre del cliente:</label>
       <input type="text" id="nombreDeudor" placeholder="Ej: Juan Pérez" />
     </div>
     
-    <!-- Tabla para agregar las deudas -->
     <table>
       <thead>
         <tr>
@@ -60,39 +53,35 @@
         </tr>
       </thead>
       <tbody id="tablaDeudas">
-        <!-- Filas generadas dinámicamente -->
+        <!-- Filas dinámicas -->
       </tbody>
     </table>
 
-    <!-- Botones principales del simulador -->
-    <button class="btn btn-primario" id="btnAgregarFila" aria-label="Añadir fila">+ Añadir fila</button>
-    <button class="btn btn-primario" id="btnCalcular" aria-label="Calcular resultados">Calcular</button>
-    <button class="btn btn-secundario" id="btnReAnalizar" aria-label="Re-Analizar">Re-Analizar</button>
-    
-    <!-- Campo para especificar el número de cuotas -->
+    <!-- Botones principales -->
+    <button class="btn btn-primario" id="btnAgregarFila">+ Añadir fila</button>
+    <button class="btn btn-primario" id="btnCalcular">Calcular</button>
+    <button class="btn btn-secundario" id="btnReAnalizar">Re-Analizar</button>
+
     <div class="campo">
       <label for="numCuotas">Nº de cuotas:</label>
       <input type="number" id="numCuotas" placeholder="12" value="12" min="1" />
     </div>
-    
-    <!-- Sección de resultados (oculta inicialmente) -->
+
     <div class="resultado-final" id="resultadoFinal" style="display: none;">
       <p id="resultadoTotalAPagar"><strong>Total a Pagar:</strong> €0.00</p>
     </div>
-    
-    <!-- Botón para mostrar historial de simulaciones -->
-    <button class="btn btn-secundario" id="btnMostrarHistorial" aria-label="Mostrar historial">Mostrar Historial</button>
+
+    <button class="btn btn-secundario" id="btnMostrarHistorial">Mostrar Historial</button>
   </div>
 
-  <!-- ====================== CONTENEDOR PLAN DE LIQUIDACIÓN ====================== -->
-  <div class="plan-container-outer" id="planContainerOuter">
-    <button class="btn-descargar-plan" id="btnDescargarPlan" aria-label="Descargar PDF">Descargar PDF</button>
-    <button class="btn btn-primario" id="btnContratar" aria-label="Contratar Plan">Contratar Plan</button>
+  <div class="plan-container-outer" id="planContainerOuter" style="display: none;">
+    <button class="btn-descargar-plan" id="btnDescargarPlan">Descargar PDF</button>
+    <button class="btn btn-primario" id="btnContratar">Contratar Plan</button>
     
     <div id="plan-de-liquidacion">
-      <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" style="margin: 0 auto 20px auto;" />
+      <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" style="margin:0 auto 20px" />
       <div class="header">DMD asesores</div>
-      
+
       <div class="info-container">
         <div class="info-box">
           <p><strong>Nombre:</strong> <span id="plan-nombre-deudor">--</span></p>
@@ -105,7 +94,7 @@
           <p><strong>Fecha de vigencia:</strong> 3 días hábiles</p>
         </div>
       </div>
-      
+
       <div class="plan-container">
         <div class="plan-left">
           <div class="chart">
@@ -134,7 +123,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="tabla-deudas">
         <h2>Detalle de deudas</h2>
         <table>
@@ -146,17 +135,16 @@
             </tr>
           </thead>
           <tbody id="plan-tabla-body">
-            <!-- Se llenará dinámicamente -->
           </tbody>
         </table>
       </div>
-      
+
       <div class="disclaimer">
-        <p>La reducción de la deuda con las entidades financieras es aproximada...</p>
-        <p>Se aclara expresamente que: Cualquier variación en la Deuda Total Inicial...</p>
-        <p>Los datos contenidos en este documento tienen carácter informativo...</p>
-        <p>Comisión Administrativa Mensual: El plan incluye una comisión de gestión...</p>
-        <p>Comisión de Éxito: Se aplicará una comisión de ...</p>
+        <p>La reducción de la deuda...</p>
+        <p>Se aclara expresamente que...</p>
+        <p>Los datos contenidos en este documento...</p>
+        <p>Comisión Administrativa Mensual: El plan incluye...</p>
+        <p>Comisión de Éxito: Se aplicará una comisión de...</p>
       </div>
       <div class="footer">
         <div class="asesor-info">
@@ -168,7 +156,6 @@
     </div>
   </div>
 
-  <!-- ====================== HISTORIAL DE SIMULACIONES ====================== -->
   <div class="historial-container" id="historialContainer" style="display: none;">
     <h2>Historial de Simulaciones</h2>
     <table id="tablaHistorial">
@@ -185,21 +172,17 @@
           <th>Acciones</th>
         </tr>
       </thead>
-      <tbody id="historialBody">
-        <!-- Filas dinámicas -->
-      </tbody>
+      <tbody id="historialBody"></tbody>
     </table>
-    <button class="btn btn-secundario" id="btnCerrarHistorial" aria-label="Cerrar historial">
-      Cerrar Historial
-    </button>
+    <button class="btn btn-secundario" id="btnCerrarHistorial">Cerrar Historial</button>
   </div>
   
-  <!-- Librerías para generar PDF -->
+  <!-- Librerías PDF -->
   <script src="./.libs/html2canvas.min.js"></script>
   <script src="./.libs/jspdf.umd.min.js"></script>
   <script src="./.libs/html2pdf.bundle.min.js"></script>
   
-  <!-- Archivo JavaScript principal -->
+  <!-- JS principal -->
   <script src="js/main.js"></script>
 </body>
 </html>
