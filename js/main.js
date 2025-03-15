@@ -1,3 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Optimizado</title>
+</head>
+<body>
+
+<!-- Elementos de UI, tabla y botones -->
+<button id="btnAgregarFila">Agregar Fila</button>
+<button id="btnCalcular">Calcular</button>
+<button id="btnReAnalizar">Re-Analizar</button>
+<button id="btnMostrarHistorial">Mostrar Historial</button>
+<button id="btnCerrarHistorial">Cerrar Historial</button>
+<button id="btnDescargarPlan">Descargar Plan</button>
+<button id="btnContratar">Contratar</button>
+
+<input id="nombreDeudor" type="text" placeholder="Nombre Deudor"/>
+<input id="numCuotas" type="number" value="12"/>
+
+<div id="resultadoFinal" style="display:none;">Resultado</div>
+<div id="planContainerOuter" style="display:none;">Plan Container</div>
+<div id="historialContainer" style="display:none;">Historial</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>N° Contrato</th>
+      <th>Tipo Producto</th>
+      <th>Entidad</th>
+      <th>Importe</th>
+      <th>% Descuento</th>
+      <th>Importe c/desc</th>
+      <th>Eliminar</th>
+    </tr>
+  </thead>
+  <tbody id="tablaDeudas"></tbody>
+</table>
+
+<canvas id="myChart"></canvas>
+
+<script>
 /**********************************************************
  * VARIABLES
  **********************************************************/
@@ -5,27 +47,55 @@ let ENTIDADES = [];
 let TIPOS_PRODUCTO = [];
 let myChart = null; // Chart.js
 
+// Referencias a elementos del DOM para reutilizar
+const tablaDeudasBody = document.getElementById('tablaDeudas');
+const btnAgregarFila = document.getElementById('btnAgregarFila');
+const btnCalcular = document.getElementById('btnCalcular');
+const btnReAnalizar = document.getElementById('btnReAnalizar');
+const btnMostrarHistorial = document.getElementById('btnMostrarHistorial');
+const btnCerrarHistorial = document.getElementById('btnCerrarHistorial');
+const btnDescargarPlan = document.getElementById('btnDescargarPlan');
+const btnContratar = document.getElementById('btnContratar');
+
+/**********************************************************
+ * EVENTOS DOM
+ **********************************************************/
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1) Cargar arrays de Google Sheets (doGet)
   await cargarListasDesdeSheets();
 
-  // 2) Asignar eventos
-  document.getElementById('btnAgregarFila').addEventListener('click', agregarFila);
-  document.getElementById('btnCalcular').addEventListener('click', calcular);
-  document.getElementById('btnReAnalizar').addEventListener('click', reAnalizar);
-  document.getElementById('btnMostrarHistorial').addEventListener('click', mostrarHistorial);
-  document.getElementById('btnCerrarHistorial').addEventListener('click', ocultarHistorial);
-  document.getElementById('btnDescargarPlan').addEventListener('click', descargarPlan);
-  document.getElementById('btnContratar').addEventListener('click', enviarDatosAGoogleSheets);
+  // Asignar eventos
+  btnAgregarFila.addEventListener('click', agregarFila);
+  btnCalcular.addEventListener('click', calcular);
+  btnReAnalizar.addEventListener('click', reAnalizar);
+  btnMostrarHistorial.addEventListener('click', mostrarHistorial);
+  btnCerrarHistorial.addEventListener('click', ocultarHistorial);
+  btnDescargarPlan.addEventListener('click', descargarPlan);
+  btnContratar.addEventListener('click', enviarDatosAGoogleSheets);
 
-  // Iniciar la tabla con 1 fila
+  // Iniciar con 1 fila
   agregarFila();
 });
+
+// Manejo de input con "debounce" para optimizar recálculos
+function debounce(func, wait) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+tablaDeudasBody.addEventListener('input', debounce((evt) => {
+  if(evt.target.tagName === 'INPUT'){
+    const fila = evt.target.closest('tr');
+    if(fila) recalcularFila(fila);
+  }
+}, 300));
 
 /**********************************************************
  * CARGA DE DATOS (doGet)
  **********************************************************/
-async function cargarListasDesdeSheets() {
+const cargarListasDesdeSheets = async () => {
   const url = "https://script.google.com/macros/s/AKfycbyn0xR5H88NT0m_QQc9GEta46hoOiLJzgxb5WVcW19A7yqxwjb-4XUEb06-oHr48dOC/exec";
   try {
     const resp = await fetch(url);
@@ -40,75 +110,70 @@ async function cargarListasDesdeSheets() {
     ENTIDADES = [];
     TIPOS_PRODUCTO = [];
   }
-}
+};
+
+/**********************************************************
+ * FUNCIONES AUXILIARES PARA CREAR ELEMENTOS
+ **********************************************************/
+const crearOpcion = (valor, texto, title = '') => {
+  const option = document.createElement('option');
+  option.value = valor;
+  option.textContent = texto;
+  if(title) option.title = title;
+  return option;
+};
+
+const crearInput = (type, placeholder = '') => {
+  const inp = document.createElement('input');
+  inp.type = type;
+  if(placeholder) inp.placeholder = placeholder;
+  return inp;
+};
+
+const crearSelectConOpciones = (opciones) => {
+  const sel = document.createElement('select');
+  opciones.forEach((op) => {
+    // Limita la vista a 45 caracteres
+    const displayText = op.length > 45 ? op.substring(0,42) + "..." : op;
+    const nuevaOpcion = crearOpcion(op, displayText, op);
+    sel.appendChild(nuevaOpcion);
+  });
+  return sel;
+};
 
 /**********************************************************
  * TABLA DE DEUDAS
  **********************************************************/
-const tablaDeudasBody = document.getElementById('tablaDeudas');
-
-// Manejo de input con "debounce"
-function debounce(func, wait) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
-tablaDeudasBody.addEventListener('input', debounce((evt) => {
-  if(evt.target.tagName === 'INPUT'){
-    const fila = evt.target.closest('tr');
-    if(fila) recalcularFila(fila);
-  }
-}, 300));
-
-function agregarFila(){
+const agregarFila = () => {
   const tr = document.createElement('tr');
 
-  // Col 1) N° Contrato (input text)
+  // Col 1) N° Contrato
   const tdContrato = document.createElement('td');
-  const inContrato = document.createElement('input');
-  inContrato.type = 'text';
-  inContrato.placeholder = 'Ej: 12345';
+  const inContrato = crearInput('text', 'Ej: 12345');
   tdContrato.appendChild(inContrato);
 
-  // Col 2) Tipo Producto (select)
+  // Col 2) Tipo Producto
   const tdTipo = document.createElement('td');
   const selTipo = document.createElement('select');
   TIPOS_PRODUCTO.forEach(tp => {
-    const option = document.createElement('option');
-    option.value = tp;
-    option.textContent = tp;
-    selTipo.appendChild(option);
+    const opcion = crearOpcion(tp, tp);
+    selTipo.appendChild(opcion);
   });
   tdTipo.appendChild(selTipo);
 
-  // Col 3) Entidad (select)
+  // Col 3) Entidad
   const tdEntidad = document.createElement('td');
-  const selEntidad = document.createElement('select');
-  ENTIDADES.forEach(ent => {
-    const option = document.createElement('option');
-    option.value = ent;
-    // si es muy largo, recortar para visual
-    let displayText = (ent.length>45)? ent.substring(0,42)+"...": ent;
-    option.textContent = displayText;
-    option.title = ent;
-    selEntidad.appendChild(option);
-  });
+  const selEntidad = crearSelectConOpciones(ENTIDADES);
   tdEntidad.appendChild(selEntidad);
 
   // Col 4) Importe
   const tdImporte = document.createElement('td');
-  const inImporte = document.createElement('input');
-  inImporte.type = 'number';
-  inImporte.placeholder = '3000';
+  const inImporte = crearInput('number', '3000');
   tdImporte.appendChild(inImporte);
 
   // Col 5) % Descuento
   const tdDesc = document.createElement('td');
-  const inDesc = document.createElement('input');
-  inDesc.type = 'number';
-  inDesc.placeholder = '30';
+  const inDesc = crearInput('number', '30');
   tdDesc.appendChild(inDesc);
 
   // Col 6) Importe con desc
@@ -124,10 +189,11 @@ function agregarFila(){
   btnEliminar.textContent = '🗑';
   btnEliminar.addEventListener('click', () => {
     tablaDeudasBody.removeChild(tr);
-    calcular(); // reCalcular
+    calcular(); // re-calcular cuando se elimina fila
   });
   tdEliminar.appendChild(btnEliminar);
 
+  // Agregar tds al tr
   tr.appendChild(tdContrato);
   tr.appendChild(tdTipo);
   tr.appendChild(tdEntidad);
@@ -136,10 +202,11 @@ function agregarFila(){
   tr.appendChild(tdConDesc);
   tr.appendChild(tdEliminar);
 
+  // Agregar tr al tbody
   tablaDeudasBody.appendChild(tr);
-}
+};
 
-function recalcularFila(fila){
+const recalcularFila = (fila) => {
   const inImporte = fila.querySelector('td:nth-child(4) input');
   const inDesc    = fila.querySelector('td:nth-child(5) input');
   const spConDesc = fila.querySelector('td:nth-child(6) span');
@@ -148,7 +215,7 @@ function recalcularFila(fila){
   const desc     = parseFloat(inDesc.value) || 0;
   const conDesc  = importe * (1 - desc/100);
   spConDesc.textContent = conDesc.toFixed(2);
-}
+};
 
 /**********************************************************
  * CALCULAR
@@ -167,7 +234,10 @@ function reAnalizar(){
   document.getElementById('planContainerOuter').style.display='none';
   document.getElementById('nombreDeudor').value='';
   document.getElementById('numCuotas').value='12';
-  if(myChart) { myChart.destroy(); myChart=null; }
+  if(myChart) {
+    myChart.destroy();
+    myChart = null;
+  }
   agregarFila();
 }
 
@@ -178,6 +248,7 @@ function mostrarHistorial(){
   document.getElementById('historialContainer').style.display='block';
   // Lógica para llenar tu tablaHistorial
 }
+
 function ocultarHistorial(){
   document.getElementById('historialContainer').style.display='none';
 }
@@ -207,27 +278,30 @@ function actualizarGrafico(ahorro, sumaDescontada){
   if(myChart) myChart.destroy();
 
   const data = {
-    labels:['Ahorro','Pago'],
-    datasets:[{
-      data:[ahorro, sumaDescontada],
-      backgroundColor:['#34c759','#007aff']
+    labels: ['Ahorro','Pago'],
+    datasets: [{
+      data: [ahorro, sumaDescontada],
+      backgroundColor: ['#34c759','#007aff']
     }]
   };
   const options = {
-    responsive:true,
-    maintainAspectRatio:false,
-    plugins:{
-      legend:{ position:'top' },
-      tooltip:{
-        callbacks:{
-          label(ctx){
-            let label=ctx.label||'';
-            let val=ctx.parsed;
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label(ctx) {
+            let label = ctx.label || '';
+            let val = ctx.parsed;
             return `${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})}`;
           }
         }
       }
     }
   };
-  myChart = new Chart(ctx,{type:'doughnut',data,options});
+  myChart = new Chart(ctx, {type: 'doughnut', data, options});
 }
+</script>
+</body>
+</html>
