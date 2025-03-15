@@ -13,7 +13,7 @@ function debounce(func, wait) {
 
 function calcularDeuda(sumaOriginal, sumaDescontada, nCuotas) {
   const ahorro = sumaOriginal - sumaDescontada;
-  const comisionExito = 0.25 * ahorro;     // 25% de lo que ahorras
+  const comisionExito = 0.25 * ahorro; // 25% de lo que ahorras
   const comisionGestion = 0.10 * sumaOriginal; // 10% de la deuda original
   const totalAPagar = sumaDescontada + comisionExito + comisionGestion;
   const cuotaMensual = totalAPagar / nCuotas;
@@ -27,7 +27,7 @@ const defaultEntidades = [
   "ID FINANCE SPAIN, S.A.U. [MONEYMAN]",
   "PLAZO CREDIT, S.L.U.",
   "4FINANCE SPAIN FINANCIAL SERVICES, S.A.U. [VIVUS]",
-  /* ... (resto de entidades) ... */
+  // ...
   "HISPANIA IURIS, S.L."
 ];
 
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Botón Toggle Gestor de Entidades
+  // Botón Toggle
   document.getElementById('btnToggleEntidades').addEventListener('click', () => {
     const contenedor = document.getElementById('entidadesContainer');
     const btn = document.getElementById('btnToggleEntidades');
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Botones de la tabla
+  // Botones tabla
   document.getElementById('btnAgregarFila').addEventListener('click', () => {
     agregarFila();
   });
@@ -106,17 +106,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('btnReAnalizar').addEventListener('click', reAnalizar);
 
-  // Botones Historial
+  // Historial
   document.getElementById('btnMostrarHistorial').addEventListener('click', mostrarHistorial);
   document.getElementById('btnCerrarHistorial').addEventListener('click', ocultarHistorial);
 
-  // Botón Descargar Plan
+  // PDF
   document.getElementById('btnDescargarPlan').addEventListener('click', descargarPlan);
 
-  // Iniciar tabla con 1 fila
+  // Iniciar con 1 fila
   agregarFila();
 
-  // Botón Contratar -> Google Sheets
+  // Contratar -> Google Sheets
   const btnContratar = document.getElementById('btnContratar');
   btnContratar.replaceWith(btnContratar.cloneNode(true));
   document.getElementById('btnContratar').addEventListener('click', enviarDatosAGoogleSheets);
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const tablaDeudasBody = document.getElementById('tablaDeudas');
 tablaDeudasBody.addEventListener(
   'input',
-  debounce(function(event) {
+  debounce((event) => {
     if (event.target.tagName === 'INPUT') {
       validarInputPositivo(event.target);
       const fila = event.target.closest('tr');
@@ -203,14 +203,16 @@ function agregarFila() {
   });
   tdEliminar.appendChild(btnEliminar);
 
-  // Insertar a la fila
+  // Agregar la fila
   fila.appendChild(tdContrato);
   fila.appendChild(tdTipo);
   fila.appendChild(tdEntidad);
   fila.appendChild(tdDeudaOrig);
-  fila.appendChild(tdDescuento);
+  fila.appendChild(inputDesc);
   fila.appendChild(tdDeudaDesc);
   fila.appendChild(tdEliminar);
+
+  // (Atención: corresponde a las 7 columnas definidas en el <thead>)
 
   tablaDeudasBody.appendChild(fila);
 }
@@ -239,23 +241,23 @@ function recalcularFila(fila) {
 /**********************************************************
  * CÁLCULO Y RESULTADOS
  **********************************************************/
-const inputNombreDeudor = document.getElementById('nombreDeudor');
-const inputNumCuotas = document.getElementById('numCuotas');
-const resultadoFinalDiv = document.getElementById('resultadoFinal');
+const inputNombreDeudor  = document.getElementById('nombreDeudor');
+const inputNumCuotas     = document.getElementById('numCuotas');
+const resultadoFinalDiv  = document.getElementById('resultadoFinal');
 const planContainerOuter = document.getElementById('planContainerOuter');
 
-const planNombreDeudor = document.getElementById('plan-nombre-deudor');
-const planNumDeudas = document.getElementById('plan-num-deudas');
-const planDeudaTotal = document.getElementById('plan-deuda-total');
-const planLoQueDebes = document.getElementById('plan-lo-que-debes');
-const planLoQuePagarias = document.getElementById('plan-lo-que-pagarias');
-const planAhorro = document.getElementById('plan-ahorro');
-const planCuotaMensual = document.getElementById('plan-cuota-mensual');
+const planNombreDeudor   = document.getElementById('plan-nombre-deudor');
+const planNumDeudas      = document.getElementById('plan-num-deudas');
+const planDeudaTotal     = document.getElementById('plan-deuda-total');
+const planLoQueDebes     = document.getElementById('plan-lo-que-debes');
+const planLoQuePagarias  = document.getElementById('plan-lo-que-pagarias');
+const planAhorro         = document.getElementById('plan-ahorro');
+const planCuotaMensual   = document.getElementById('plan-cuota-mensual');
 const planDescuentoTotal = document.getElementById('plan-descuento-total');
-const planDuracion = document.getElementById('plan-duracion');
-const planFecha = document.getElementById('plan-fecha');
-const planFolio = document.getElementById('plan-folio');
-const planTablaBody = document.getElementById('plan-tabla-body');
+const planDuracion       = document.getElementById('plan-duracion');
+const planFecha          = document.getElementById('plan-fecha');
+const planFolio          = document.getElementById('plan-folio');
+const planTablaBody      = document.getElementById('plan-tabla-body');
 
 let myChart = null;
 
@@ -298,10 +300,10 @@ function calcular() {
 
   const nCuotas = parseInt(inputNumCuotas.value) || 1;
   const { ahorro, comisionExito, comisionGestion, totalAPagar, cuotaMensual } = calcularDeuda(sumaOriginal, sumaDescontada, nCuotas);
-  
+
   const promedioDesc = (numeroDeudas > 0) ? (sumaPorcentajes / numeroDeudas) : 0;
 
-  // Muestra resultados
+  // Mostrar resultados
   resultadoFinalDiv.style.display = 'block';
   resultadoFinalDiv.innerHTML = `
     <h3>Resultados (Simulador)</h3>
@@ -335,7 +337,7 @@ function calcular() {
   planDescuentoTotal.textContent = descuentoPorc.toFixed(2) + '%';
   planDuracion.textContent = nCuotas + ' meses';
 
-  // Fecha y Folio
+  // Fecha y folio
   const hoy = new Date();
   const dia = String(hoy.getDate()).padStart(2, '0');
   const mes = String(hoy.getMonth() + 1).padStart(2, '0');
@@ -380,7 +382,7 @@ function generarNuevoFolio() {
   localStorage.setItem('contadorFolio', contador);
   
   const hoy = new Date();
-  const fecha = `${hoy.getFullYear()}${(hoy.getMonth()+1).toString().padStart(2,'0')}${hoy.getDate().toString().padStart(2,'0')}`;
+  const fecha = `${hoy.getFullYear()}${String(hoy.getMonth()+1).padStart(2,'0')}${String(hoy.getDate()).padStart(2,'0')}`;
   
   return `FOLIO-${fecha}-${contador.toString().padStart(4, '0')}`;
 }
@@ -426,7 +428,6 @@ function mostrarHistorial() {
   document.getElementById('historialContainer').style.display = 'block';
 }
 
-// Eliminar entradas específicas del historial
 document.getElementById('historialBody').addEventListener('click', (e) => {
   if (e.target.matches('.btn-eliminar-historial')) {
     const folio = e.target.getAttribute('data-folio');
@@ -455,7 +456,6 @@ function reAnalizar() {
     myChart.destroy();
     myChart = null;
   }
-  // Se vuelve a iniciar con una fila
   agregarFila();
 }
 
@@ -550,8 +550,9 @@ function enviarDatosAGoogleSheets() {
   const deudaOriginal = planDeudaTotal.textContent.replace('€','').trim();
   const deudaDescontada = planLoQuePagarias.textContent.replace('€','').trim();
   const ahorro = planAhorro.textContent.replace('€','').trim();
+
   let totalAPagar = document.getElementById('resultadoTotalAPagar')
-                     .textContent.split('€')[1]?.trim() || 0;
+                      .textContent.split('€')[1]?.trim() || "0";
 
   const datosPlan = {
     folio,
@@ -564,22 +565,20 @@ function enviarDatosAGoogleSheets() {
     totalAPagar
   };
 
-  // 2. Convertir a x-www-form-urlencoded
+  // 2. x-www-form-urlencoded
   const formData = new URLSearchParams();
   for (const key in datosPlan) {
     formData.append(key, datosPlan[key]);
   }
 
-  // 3. URL de tu Web App de Google Apps Script
+  // 3. Tu Web App de Apps Script
   const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxLEVjy-I3VrnhJKFW9NORhI1QoHJ3LDgDIcHg0OccsAIULynDTVzgRhUXn1XJmFfa1/exec";
 
-  // 4. Hacer el POST
+  // 4. POST
   fetch(GOOGLE_SHEET_ENDPOINT, {
     method: "POST",
-    mode: "cors", // O "no-cors" si surge problema
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
+    mode: "cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: formData.toString()
   })
   .then(response => response.text())
@@ -592,32 +591,14 @@ function enviarDatosAGoogleSheets() {
   })
   .catch(err => {
     console.error(err);
-    alert("Error de conexión o CORS al enviar datos a Google Sheets.");
+    alert("Error de conexión al enviar datos a Google Sheets.");
   });
 }
 
 /**********************************************************
- // SI NO QUIERES USAR ONEDRIVE, COMENTAR/ELIMINAR
+ // EJEMPLO: SI QUISIERAS ONEDRIVE/MSAL, COMENTA LO DE GOOGLE
 **********************************************************/
 /*
-// Configuración para Azure y OneDrive
-const onedriveConfig = {
-  clientId: '70c93901-d8a3-46e0-a4ac-ff1100a9b04e',
-  redirectUri: 'https://rlxhomie.github.io/Reestructuraciones/',
-  excelFilePath: '/Documents/PlanesContratados.xlsx',
-  worksheetName: 'Planes',
-  scopes: ['Files.ReadWrite', 'Sites.ReadWrite.All'],
-};
-
-const msalInstance = new msal.PublicClientApplication({
-  auth: {
-    clientId: onedriveConfig.clientId,
-    redirectUri: onedriveConfig.redirectUri,
-  },
-});
-
-async function autenticarYEnviarOneDrive() { ... }
-async function enviarDatosAOneDriveExcel(token) { ... }
-function recopilarDatosPlan() { ... }
-function mostrarIndicadorCarga(mostrar) { ... }
+// ...
 */
+
