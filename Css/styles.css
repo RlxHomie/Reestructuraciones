@@ -1,0 +1,472 @@
+/* =======================================================
+   ESTILOS GENERALES Y TIPOGRAFÍA
+======================================================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f5f5f7;
+  color: #1d1d1f;
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  padding: 20px;
+}
+
+/* =======================================================
+   ENCABEZADO Y LOGO
+======================================================= */
+.header-simulador {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.header-simulador h1 {
+  margin-top: 20px;
+  color: #1d1d1f;
+  font-size: 2rem;
+  font-weight: 600;
+}
+.logo, .apple-logo {
+  max-width: 100px;
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* =======================================================
+   BOTONES
+======================================================= */
+.btn {
+  cursor: pointer;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  transition: all 0.3s ease;
+  margin: 5px 8px 5px 0;
+  font-weight: 500;
+}
+.btn-primario {
+  background-color: #007aff;
+  color: #fff;
+}
+.btn-primario:hover {
+  background-color: #006ae6;
+  transform: translateY(-1px);
+}
+.btn-secundario {
+  background-color: transparent;
+  color: #007aff;
+  border: 1px solid #007aff;
+}
+.btn-secundario:hover {
+  background-color: #007aff;
+  color: #fff;
+}
+.btn-borrar {
+  background: none;
+  color: #ff3b30;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+.btn-borrar:hover {
+  opacity: 0.7;
+}
+.btn-descargar-plan {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 12px;
+  background-color: #007aff;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  transition: background-color 0.2s ease;
+}
+.btn-descargar-plan:hover {
+  background-color: #006ae6;
+  transform: translateY(-1px);
+}
+.clicked {
+  transform: scale(0.95);
+}
+.error {
+  border-color: #ff3b30 !important;
+}
+
+/* =======================================================
+   CONTENEDOR PRINCIPAL (SIMULADOR)
+======================================================= */
+.contenedor-simulador {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 40px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.contenedor-simulador:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* =======================================================
+   CAMPOS Y TABLAS
+======================================================= */
+.campo {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+}
+.campo label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #1d1d1f;
+}
+.campo input {
+  padding: 12px;
+  border: 1px solid #d1d1d6;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+.campo input:focus {
+  border-color: #007aff;
+  outline: none;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  table-layout: fixed;
+}
+thead th {
+  text-align: center;
+  font-weight: 600;
+  padding: 12px 5px;
+  border-bottom: 1px solid #e5e5ea;
+  color: #1d1d1f;
+  background-color: #f8f8fa;
+}
+tbody td {
+  padding: 12px 5px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e5e5ea;
+  text-align: center;
+}
+td input[type="text"],
+td input[type="number"],
+td select {
+  width: 90%;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* =======================================================
+   BOTONES DE HISTORIAL
+======================================================= */
+.historial-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.historial-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007aff;
+}
+.historial-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.historial-container th,
+.historial-container td {
+  border: 1px solid #e5e5ea;
+  text-align: center;
+  padding: 10px;
+}
+.btn-eliminar-historial {
+  background-color: #ff3b30;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn-eliminar-historial:hover {
+  background-color: #e02a24;
+}
+
+/* =======================================================
+   RESULTADO FINAL
+======================================================= */
+.resultado-final {
+  margin-top: 1.5rem;
+  padding: 20px;
+  background-color: #f2f8ff;
+  border-radius: 12px;
+  border: 1px solid #dae7fe;
+}
+.resultado-final h3 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: #007aff;
+  margin-bottom: 12px;
+}
+
+/* =======================================================
+   PLAN DE LIQUIDACIÓN
+======================================================= */
+.plan-container-outer {
+  display: none;
+  max-width: 1000px;
+  margin: 0 auto;
+  margin-bottom: 20px;
+}
+.header {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1d1d1f;
+  text-align: left;
+}
+.info-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e5ea;
+}
+.info-box {
+  width: 48%;
+  margin-bottom: 10px;
+}
+.info-box p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.info-box p strong {
+  color: #007aff;
+  font-weight: 600;
+}
+.plan-container {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.plan-left {
+  flex: 1 1 60%;
+  background-color: #f5f5f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  border-top-left-radius: 18px;
+  border-bottom-left-radius: 18px;
+  min-height: 220px;
+}
+.chart {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
+}
+.values p {
+  margin: 8px 0;
+  font-weight: 500;
+  color: #1d1d1f;
+  font-size: 1.1rem;
+}
+.ahorro {
+  margin-top: 20px;
+  background-color: #007aff;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+.plan-right {
+  flex: 1 1 40%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px;
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+.plan-card {
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  text-align: center;
+  padding: 15px;
+  background-color: #fff;
+  margin: 10px;
+  transition: transform 0.3s ease;
+  flex: 1 1 30%;
+  min-width: 120px;
+}
+.plan-card:hover {
+  transform: translateY(-5px);
+}
+.plan-card p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+.plan-card h4 {
+  font-size: 1.2rem;
+  color: #007aff;
+  margin: 0;
+}
+.tabla-deudas {
+  background: #fff;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+.tabla-deudas h2 {
+  background-color: #007aff;
+  color: #fff;
+  margin: 0;
+  padding: 12px;
+  font-size: 1rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.tabla-deudas table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabla-deudas th,
+.tabla-deudas td {
+  padding: 12px;
+  text-align: center;
+}
+.tabla-deudas thead {
+  background-color: #f2f2ea;
+}
+.tabla-deudas td:first-child,
+.tabla-deudas th:first-child {
+  width: 250px;
+}
+
+/* =======================================================
+   DISCLAIMER Y FOOTER
+======================================================= */
+.disclaimer {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e5ea;
+}
+.disclaimer p {
+  margin-bottom: 10px;
+  line-height: 1.2;
+  font-size: 0.75rem;
+  color: #666;
+}
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e5e5ea;
+}
+.footer .asesor-info {
+  font-size: 0.9rem;
+  color: #666;
+}
+.footer .asesor-info p {
+  margin-bottom: 5px;
+}
+.footer .asesor-info p strong {
+  color: #007aff;
+}
+
+/* =======================================================
+   RESPONSIVE
+======================================================= */
+@media (max-width: 768px) {
+  .contenedor-simulador {
+    padding: 15px;
+  }
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .info-container {
+    flex-direction: column;
+  }
+  .info-box {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  .plan-container {
+    flex-direction: column;
+  }
+  .plan-left,
+  .plan-right {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 15px;
+  }
+  th:nth-child(n),
+  td:nth-child(n) {
+    width: auto;
+    min-width: 120px;
+  }
+}
+
+/* =======================================================
+   INDICADOR DE CARGA
+======================================================= */
+.indicador-carga {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  color: white;
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
