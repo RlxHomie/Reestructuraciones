@@ -21,7 +21,7 @@ function calcularDeuda(sumaOriginal, sumaDescontada, nCuotas) {
 }
 
 /**********************************************************
- * GESTIÓN DE ENTIDADES (GUARDADAS EN LOCALSTORAGE)
+ * GESTIÓN DE ENTIDADES (LOCALSTORAGE)
  **********************************************************/
 const defaultEntidades = [
   "ID FINANCE SPAIN, S.A.U. [MONEYMAN]",
@@ -106,17 +106,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('btnReAnalizar').addEventListener('click', reAnalizar);
 
-  // Botón Mostrar/ocultar historial
+  // Botones Historial
   document.getElementById('btnMostrarHistorial').addEventListener('click', mostrarHistorial);
   document.getElementById('btnCerrarHistorial').addEventListener('click', ocultarHistorial);
 
-  // Botón de descargar PDF
+  // Botón Descargar Plan
   document.getElementById('btnDescargarPlan').addEventListener('click', descargarPlan);
 
-  // Preparar tabla con 1 fila inicial
+  // Iniciar tabla con 1 fila
   agregarFila();
 
-  // BOTÓN CONTRATAR: Lo reemplazamos para llamar a Google Sheets en vez de OneDrive
+  // Botón Contratar -> Google Sheets
   const btnContratar = document.getElementById('btnContratar');
   btnContratar.replaceWith(btnContratar.cloneNode(true));
   document.getElementById('btnContratar').addEventListener('click', enviarDatosAGoogleSheets);
@@ -192,18 +192,18 @@ function agregarFila() {
   spanDeudaDesc.textContent = '0.00';
   tdDeudaDesc.appendChild(spanDeudaDesc);
 
-  // Columna Botón Eliminar
+  // Columna Eliminar
   const tdEliminar = document.createElement('td');
   const btnEliminar = document.createElement('button');
   btnEliminar.className = 'btn-borrar';
   btnEliminar.innerHTML = '🗑';
   btnEliminar.addEventListener('click', () => {
     tablaDeudasBody.removeChild(fila);
-    calcular(); // recalcular cuando se borra una fila
+    calcular();
   });
   tdEliminar.appendChild(btnEliminar);
 
-  // Insertar todas las celdas en la fila
+  // Insertar a la fila
   fila.appendChild(tdContrato);
   fila.appendChild(tdTipo);
   fila.appendChild(tdEntidad);
@@ -231,402 +231,4 @@ function recalcularFila(fila) {
 
   const deudaOriginal = parseFloat(inputDeudaOriginal.value) || 0;
   const descuento = parseFloat(inputDescuento.value) || 0;
-  const deudaConDescuento = deudaOriginal * (1 - descuento / 100);
-  
-  spanDeudaDesc.textContent = deudaConDescuento.toFixed(2);
-}
-
-/**********************************************************
- * BOTÓN CALCULAR Y RESULTADOS
- **********************************************************/
-const inputNombreDeudor = document.getElementById('nombreDeudor');
-const inputNumCuotas = document.getElementById('numCuotas');
-const resultadoFinalDiv = document.getElementById('resultadoFinal');
-const planContainerOuter = document.getElementById('planContainerOuter');
-
-const planNombreDeudor = document.getElementById('plan-nombre-deudor');
-const planNumDeudas = document.getElementById('plan-num-deudas');
-const planDeudaTotal = document.getElementById('plan-deuda-total');
-const planLoQueDebes = document.getElementById('plan-lo-que-debes');
-const planLoQuePagarias = document.getElementById('plan-lo-que-pagarias');
-const planAhorro = document.getElementById('plan-ahorro');
-const planCuotaMensual = document.getElementById('plan-cuota-mensual');
-const planDescuentoTotal = document.getElementById('plan-descuento-total');
-const planDuracion = document.getElementById('plan-duracion');
-const planFecha = document.getElementById('plan-fecha');
-const planFolio = document.getElementById('plan-folio');
-const planTablaBody = document.getElementById('plan-tabla-body');
-
-let myChart = null;
-
-function calcular() {
-  const filas = Array.from(tablaDeudasBody.querySelectorAll('tr'));
-  const nombreDeudor = inputNombreDeudor.value.trim() || 'Sin nombre';
-  
-  let sumaOriginal = 0;
-  let sumaDescontada = 0;
-  let sumaPorcentajes = 0;
-  let numeroDeudas = 0;
-
-  let filasData = [];
-
-  filas.forEach((fila) => {
-    numeroDeudas++;
-    const inputContrato = fila.querySelector('td:nth-child(1) input');
-    const inputTipo = fila.querySelector('td:nth-child(2) input');
-    const selectEntidad = fila.querySelector('td:nth-child(3) select');
-    const inputDeudaOrig = fila.querySelector('td:nth-child(4) input');
-    const inputDesc = fila.querySelector('td:nth-child(5) input');
-    const spanDeudaDesc = fila.querySelector('td:nth-child(6) span');
-
-    const deudaOriginal = parseFloat(inputDeudaOrig.value) || 0;
-    const descuento = parseFloat(inputDesc.value) || 0;
-    const deudaConDesc = parseFloat(spanDeudaDesc.textContent) || 0;
-
-    sumaOriginal += deudaOriginal;
-    sumaDescontada += deudaConDesc;
-    sumaPorcentajes += descuento;
-
-    filasData.push({
-      numeroContrato: inputContrato.value,
-      tipoProducto: inputTipo.value,
-      entidad: selectEntidad.value,
-      deudaOriginal,
-      deudaConDesc
-    });
-  });
-
-  const nCuotas = parseInt(inputNumCuotas.value) || 1;
-  const { ahorro, comisionExito, comisionGestion, totalAPagar, cuotaMensual } = calcularDeuda(sumaOriginal, sumaDescontada, nCuotas);
-  
-  const promedioDesc = (numeroDeudas > 0) ? (sumaPorcentajes / numeroDeudas) : 0;
-
-  // Mostrar resultados en la parte inferior
-  resultadoFinalDiv.style.display = 'block';
-  resultadoFinalDiv.innerHTML = `
-    <h3>Resultados (Simulador)</h3>
-    <p><strong>Nombre Deudor:</strong> ${nombreDeudor}</p>
-    <p><strong>Número de Deudas:</strong> ${numeroDeudas}</p>
-    <p><strong>Deuda Original:</strong> €${sumaOriginal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-    <p><strong>Deuda Descontada:</strong> €${sumaDescontada.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-    <p><strong>Ahorro:</strong> €${ahorro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-    <p><strong>Promedio % Descuento:</strong> ${promedioDesc.toFixed(2)}%</p>
-    <hr />
-    <p><strong>Comisión de Éxito (25% Ahorro):</strong> €${comisionExito.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-    <p><strong>Comisión de Gestión (10% Deuda Original):</strong> €${comisionGestion.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-    <p><strong>Total a Pagar:</strong> €${totalAPagar.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-    <p><strong>Cuotas:</strong> ${nCuotas}</p>
-    <p><strong>Cuota Mensual:</strong> €${cuotaMensual.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-  `;
-
-  // Actualizar el plan de liquidación
-  planContainerOuter.style.display = 'block';
-  planNombreDeudor.textContent = nombreDeudor;
-  planNumDeudas.textContent = numeroDeudas;
-  planDeudaTotal.textContent = '€' + sumaOriginal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  
-  planLoQueDebes.textContent = '€' + sumaOriginal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  planLoQuePagarias.textContent = '€' + sumaDescontada.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  
-  planAhorro.textContent = '€' + ahorro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  planCuotaMensual.textContent = '€' + cuotaMensual.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  
-  let descuentoPorc = (sumaOriginal > 0) ? (ahorro / sumaOriginal) * 100 : 0;
-  planDescuentoTotal.textContent = descuentoPorc.toFixed(2) + '%';
-  planDuracion.textContent = nCuotas + ' meses';
-
-  // Fecha y folio
-  const hoy = new Date();
-  const dia = String(hoy.getDate()).padStart(2, '0');
-  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-  const anio = hoy.getFullYear();
-  planFecha.textContent = `${dia}/${mes}/${anio}`;
-  
-  const folioGenerado = generarNuevoFolio();
-  planFolio.textContent = folioGenerado;
-
-  // Llenar la tabla de detalle de deudas en el plan
-  planTablaBody.innerHTML = '';
-  filasData.forEach((item) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${item.entidad}</td>
-      <td>€${item.deudaOriginal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>€${item.deudaConDesc.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-    `;
-    planTablaBody.appendChild(row);
-  });
-
-  // Crear y mostrar el gráfico
-  actualizarGrafico(ahorro, sumaDescontada);
-
-  // Guardar la simulación en historial
-  guardarSimulacion({
-    folio: folioGenerado,
-    fecha: `${dia}/${mes}/${anio}`,
-    nombreDeudor,
-    numeroDeudas,
-    deudaOriginal: sumaOriginal,
-    deudaDescontada: sumaDescontada,
-    ahorro,
-    totalAPagar
-  });
-}
-
-function generarNuevoFolio() {
-  let contador = parseInt(localStorage.getItem('contadorFolio')) || 0;
-  contador++;
-  ultimoContadorFolio = contador;
-  localStorage.setItem('contadorFolio', contador);
-  
-  const hoy = new Date();
-  const fecha = `${hoy.getFullYear()}${(hoy.getMonth()+1).toString().padStart(2,'0')}${hoy.getDate().toString().padStart(2,'0')}`;
-  
-  return `FOLIO-${fecha}-${contador.toString().padStart(4, '0')}`;
-}
-
-/**********************************************************
- * HISTORIAL DE SIMULACIONES
- **********************************************************/
-function guardarSimulacion(simulacion) {
-  let historial = JSON.parse(localStorage.getItem('historialSimulaciones')) || [];
-  historial.push(simulacion);
-  localStorage.setItem('historialSimulaciones', JSON.stringify(historial));
-}
-
-function cargarHistorial() {
-  return JSON.parse(localStorage.getItem('historialSimulaciones')) || [];
-}
-
-function mostrarHistorial() {
-  const historial = cargarHistorial();
-  const historialBody = document.getElementById('historialBody');
-  historialBody.innerHTML = '';
-  
-  historial.forEach((sim) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${sim.folio}</td>
-      <td>${sim.fecha}</td>
-      <td>${sim.nombreDeudor}</td>
-      <td>${sim.numeroDeudas}</td>
-      <td>€${sim.deudaOriginal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>€${sim.deudaDescontada.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>€${sim.ahorro.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>€${sim.totalAPagar.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td>
-        <button class="btn-eliminar-historial" data-folio="${sim.folio}">
-          Eliminar
-        </button>
-      </td>
-    `;
-    historialBody.appendChild(tr);
-  });
-  
-  document.getElementById('historialContainer').style.display = 'block';
-}
-
-// Evento para eliminar simulaciones específicas
-document.getElementById('historialBody').addEventListener('click', (e) => {
-  if (e.target.matches('.btn-eliminar-historial')) {
-    const folio = e.target.getAttribute('data-folio');
-    let historial = cargarHistorial();
-    historial = historial.filter((sim) => sim.folio !== folio);
-    localStorage.setItem('historialSimulaciones', JSON.stringify(historial));
-    mostrarHistorial();
-  }
-});
-
-function ocultarHistorial() {
-  document.getElementById('historialContainer').style.display = 'none';
-}
-
-/**********************************************************
- * RE-ANALIZAR
- **********************************************************/
-function reAnalizar() {
-  tablaDeudasBody.innerHTML = '';
-  resultadoFinalDiv.style.display = 'none';
-  planContainerOuter.style.display = 'none';
-  inputNombreDeudor.value = '';
-  inputNumCuotas.value = '12';
-
-  if (myChart) {
-    myChart.destroy();
-    myChart = null;
-  }
-  // Se vuelve a iniciar con una fila
-  agregarFila();
-}
-
-/**********************************************************
- * GRÁFICO (Chart.js)
- **********************************************************/
-function actualizarGrafico(ahorro, sumaDescontada) {
-  const ctx = document.getElementById('myChart').getContext('2d');
-  if (myChart) {
-    myChart.destroy();
-  }
-  
-  const data = {
-    labels: ['Ahorro', 'Pago'],
-    datasets: [
-      {
-        data: [ahorro, sumaDescontada],
-        backgroundColor: ['#34c759', '#007aff'],
-      },
-    ],
-  };
-  
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            let label = context.label || '';
-            let value = context.parsed;
-            return `${label}: €${value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-          },
-        },
-      },
-    },
-  };
-  
-  myChart = new Chart(ctx, {
-    type: 'doughnut',
-    data,
-    options,
-  });
-}
-
-/**********************************************************
- * DESCARGAR PLAN EN PDF
- **********************************************************/
-function descargarPlan() {
-  window.scrollTo(0, 0);
-  const planDiv = document.getElementById('plan-de-liquidacion');
-  const fechaFilename = planFecha.textContent.replaceAll('/', '-');
-  const nombreDeudor = planNombreDeudor.textContent.trim() || 'Simulacion';
-  
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: `${nombreDeudor}_${fechaFilename}_${ultimoContadorFolio.toString().padStart(4, '0')}.pdf`,
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: {
-      scale: 2,
-      logging: true,
-      useCORS: true,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: document.documentElement.offsetWidth,
-      windowHeight: document.documentElement.offsetHeight,
-    },
-    jsPDF: {
-      unit: 'mm',
-      format: 'a4',
-      orientation: 'portrait',
-    },
-    pagebreak: {
-      mode: ['avoid-all', 'css', 'legacy'],
-    },
-  };
-
-  html2pdf().from(planDiv).set(opt).save();
-}
-
-/**********************************************************
- * INTEGRACIÓN CON GOOGLE SHEETS (SUSTITUIR MSAL/ONEDRIVE)
- **********************************************************/
-function enviarDatosAGoogleSheets() {
-  // 1. Recolectar datos del plan actual (coincidiendo con las columnas en tu Apps Script)
-  const folio = planFolio.textContent.trim();
-  const fecha = planFecha.textContent.trim();
-  const nombreDeudor = planNombreDeudor.textContent.trim();
-  const numeroDeudas = planNumDeudas.textContent.trim();
-  // Deuda Original (quita '€')
-  const deudaOriginal = planDeudaTotal.textContent.replace('€','').trim();
-  // Deuda Descontada (quita '€')
-  const deudaDescontada = planLoQuePagarias.textContent.replace('€','').trim();
-  // Ahorro (quita '€')
-  const ahorro = planAhorro.textContent.replace('€','').trim();
-  // Extraer total a pagar del resultado
-  let totalAPagar = document.getElementById('resultadoTotalAPagar')
-                      .textContent.split('€')[1]?.trim() || 0;
-
-  // 2. Construir objeto con esos campos
-  const datosPlan = {
-    folio,
-    fecha,
-    nombreDeudor,
-    numeroDeudas,
-    deudaOriginal,
-    deudaDescontada,
-    ahorro,
-    totalAPagar
-  };
-
-  // 3. Convertir a x-www-form-urlencoded
-  const formData = new URLSearchParams();
-  for (const key in datosPlan) {
-    formData.append(key, datosPlan[key]);
-  }
-
-  // 4. URL de tu Web App de Google Apps Script
-  const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxLEVjy-I3VrnhJKFW9NORhI1QoHJ3LDgDIcHg0OccsAIULynDTVzgRhUXn1XJmFfa1/exec";
-
-  // 5. Hacer el POST
-  fetch(GOOGLE_SHEET_ENDPOINT, {
-    method: "POST",
-    mode: "cors", // O "no-cors" si surge problema
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  })
-  .then(response => response.text())
-  .then(data => {
-    if (data.includes("OK")) {
-      alert("¡Plan contratado y enviado a Google Sheets!");
-    } else {
-      alert("Error al enviar datos: " + data);
-    }
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Error de conexión o CORS al enviar datos a Google Sheets.");
-  });
-}
-
-/**********************************************************
-// SI NO QUIERES USAR ONEDRIVE, COMENTAR O ELIMINAR:
-**********************************************************/
-/*
-// Configuración para Azure y OneDrive
-const onedriveConfig = {
-  clientId: '70c93901-d8a3-46e0-a4ac-ff1100a9b04e',
-  redirectUri: 'https://rlxhomie.github.io/Reestructuraciones/',
-  excelFilePath: '/Documents/PlanesContratados.xlsx',
-  worksheetName: 'Planes',
-  scopes: ['Files.ReadWrite', 'Sites.ReadWrite.All'],
-};
-
-const msalInstance = new msal.PublicClientApplication({
-  auth: {
-    clientId: onedriveConfig.clientId,
-    redirectUri: onedriveConfig.redirectUri,
-  },
-});
-
-// Botón Contratar (Ya no usar OneDrive):
-// document.getElementById('btnContratar').addEventListener('click', autenticarYEnviarOneDrive);
-
-async function autenticarYEnviarOneDrive() { ... }
-async function enviarDatosAOneDriveExcel(token) { ... }
-function recopilarDatosPlan() { ... }
-
-function mostrarIndicadorCarga(mostrar) { ... }
-*/
-
+  const deudaConDescuento = deudaOriginal * (1 - 
