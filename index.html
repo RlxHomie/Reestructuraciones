@@ -2,53 +2,39 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Simulador de Reestructuración - DMD</title>
-  
+
   <!-- CHART.JS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- (Opcional) MSAL, no usado ahora -->
-  <script src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.min.js"></script>
-  
-  <!-- Estilos -->
+  <!-- Hoja de estilos -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="contenedor-simulador">
     <div class="header-simulador">
+      <!-- Reemplaza la imagen por tu logo (o data:image/... ) -->
       <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" />
       <h1>DMD - Simulador de Reestructuración</h1>
     </div>
-    
-    <div class="toggle-container">
-      <button class="btn btn-secundario" id="btnToggleEntidades">Mostrar Administrar Entidades</button>
-    </div>
 
-    <div class="gestor-entidades" id="entidadesContainer" style="display: none;">
-      <h2>Administrar Entidades</h2>
-      <div class="campo">
-        <label for="nuevaEntidad">Nombre de nueva entidad:</label>
-        <input type="text" id="nuevaEntidad" placeholder="Ej: Banco XYZ" />
-      </div>
-      <button class="btn btn-primario" id="btnAgregarEntidad">Agregar entidad</button>
-      <ul id="listaEntidades"></ul>
-    </div>
-
+    <!-- Nombre del Deudor -->
     <div class="campo">
-      <label for="nombreDeudor">Nombre del cliente:</label>
+      <label for="nombreDeudor"><strong>Nombre del cliente:</strong></label>
       <input type="text" id="nombreDeudor" placeholder="Ej: Juan Pérez" />
     </div>
-    
+
+    <!-- Tabla Deudas -->
     <table>
       <thead>
         <tr>
           <th>N° Contrato</th>
           <th>Tipo Producto</th>
           <th>Entidad</th>
-          <th>Importe de deuda (€)</th>
-          <th>% Descuento</th>
-          <th>Importe con descuento (€)</th>
+          <th>Importe (€)</th>
+          <th>% Desc.</th>
+          <th>Con Desc. (€)</th>
           <th>Eliminar</th>
         </tr>
       </thead>
@@ -62,24 +48,28 @@
     <button class="btn btn-primario" id="btnCalcular">Calcular</button>
     <button class="btn btn-secundario" id="btnReAnalizar">Re-Analizar</button>
 
+    <!-- Nº Cuotas -->
     <div class="campo">
       <label for="numCuotas">Nº de cuotas:</label>
       <input type="number" id="numCuotas" placeholder="12" value="12" min="1" />
     </div>
 
-    <div class="resultado-final" id="resultadoFinal" style="display: none;">
+    <!-- Resultados (oculto inicialmente) -->
+    <div class="resultado-final" id="resultadoFinal" style="display:none;">
       <p id="resultadoTotalAPagar"><strong>Total a Pagar:</strong> €0.00</p>
     </div>
 
+    <!-- Botón para mostrar historial -->
     <button class="btn btn-secundario" id="btnMostrarHistorial">Mostrar Historial</button>
   </div>
 
-  <div class="plan-container-outer" id="planContainerOuter" style="display: none;">
+  <!-- Contenedor Plan -->
+  <div class="plan-container-outer" id="planContainerOuter" style="display:none;">
     <button class="btn-descargar-plan" id="btnDescargarPlan">Descargar PDF</button>
     <button class="btn btn-primario" id="btnContratar">Contratar Plan</button>
-    
+
     <div id="plan-de-liquidacion">
-      <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" style="margin:0 auto 20px" />
+      <img src="data:image/png;base64,..." alt="Logo DMD" class="logo apple-logo" style="margin:0 auto 20px;" />
       <div class="header">DMD asesores</div>
 
       <div class="info-container">
@@ -134,17 +124,16 @@
               <th>Lo que pagarías</th>
             </tr>
           </thead>
-          <tbody id="plan-tabla-body">
-          </tbody>
+          <tbody id="plan-tabla-body"></tbody>
         </table>
       </div>
 
       <div class="disclaimer">
-        <p>La reducción de la deuda...</p>
-        <p>Se aclara expresamente que...</p>
+        <p>La reducción de la deuda con las entidades...</p>
+        <p>Cualquier variación en la DTI declarada por el cliente...</p>
         <p>Los datos contenidos en este documento...</p>
-        <p>Comisión Administrativa Mensual: El plan incluye...</p>
-        <p>Comisión de Éxito: Se aplicará una comisión de...</p>
+        <p>Comisión Administrativa Mensual...</p>
+        <p>Comisión de Éxito...</p>
       </div>
       <div class="footer">
         <div class="asesor-info">
@@ -156,7 +145,8 @@
     </div>
   </div>
 
-  <div class="historial-container" id="historialContainer" style="display: none;">
+  <!-- Historial -->
+  <div class="historial-container" id="historialContainer" style="display:none;">
     <h2>Historial de Simulaciones</h2>
     <table id="tablaHistorial">
       <thead>
@@ -176,12 +166,11 @@
     </table>
     <button class="btn btn-secundario" id="btnCerrarHistorial">Cerrar Historial</button>
   </div>
-  
+
   <!-- Librerías PDF -->
   <script src="./.libs/html2canvas.min.js"></script>
-  <script src="./.libs/jspdf.umd.min.js"></script>
   <script src="./.libs/html2pdf.bundle.min.js"></script>
-  
+
   <!-- JS principal -->
   <script src="js/main.js"></script>
 </body>
