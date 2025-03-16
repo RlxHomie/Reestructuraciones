@@ -1,43 +1,75 @@
 /* =======================================================
-   ESTILOS GENERALES Y TIPOGRAFÍA
+   1) VARIABLES (CUSTOM PROPERTIES)
+======================================================= */
+:root {
+  /* Colores principales */
+  --color-primary: #007aff;
+  --color-primary-hover: #006ae6;
+  --color-danger: #ff3b30;
+  --color-danger-hover: #e02a24;
+  --color-background: #f5f5f7;
+  --color-text: #1d1d1f;
+  --color-white: #fff;
+  --color-border: #e5e5ea;
+  --color-table-head: #f8f8fa;
+  --color-input-border: #d1d1d6;
+  --color-result-bg: #f2f8ff;
+  --color-result-border: #dae7fe;
+
+  /* Sombras y efectos */
+  --shadow-sm: 0 2px 5px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
+
+  /* Tiempos de transición */
+  --transition-speed: 0.3s;
+  --transition-easing: ease;
+}
+
+/* =======================================================
+   2) ESTILOS GENERALES Y TIPOGRAFÍA
 ======================================================= */
 html, body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f5f5f7;
-  color: #1d1d1f;
+  background-color: var(--color-background);
+  color: var(--color-text);
   line-height: 1.6;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
 }
+
 body {
   padding: 20px;
 }
 
 /* =======================================================
-   ENCABEZADO Y LOGO
+   3) ENCABEZADO Y LOGO
 ======================================================= */
 .header-simulador {
   text-align: center;
   margin-bottom: 1.5rem;
 }
+
 .header-simulador h1 {
   margin-top: 20px;
-  color: #1d1d1f;
+  color: var(--color-text);
   font-size: 2rem;
   font-weight: 600;
 }
-.logo, .apple-logo {
+
+.logo,
+.apple-logo {
   max-width: 100px;
   display: block;
   margin: 0 auto;
   border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 /* =======================================================
-   BOTONES
+   4) BOTONES
 ======================================================= */
 .btn {
   cursor: pointer;
@@ -45,80 +77,93 @@ body {
   font-size: 16px;
   border-radius: 12px;
   border: none;
-  transition: all 0.3s ease;
   margin: 5px 8px 5px 0;
   font-weight: 500;
+  transition: 
+    background-color var(--transition-speed) var(--transition-easing),
+    color var(--transition-speed) var(--transition-easing),
+    transform var(--transition-speed) var(--transition-easing),
+    opacity var(--transition-speed) var(--transition-easing);
 }
+
 .btn-primario {
-  background-color: #007aff;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 .btn-primario:hover {
-  background-color: #006ae6;
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
 }
+
 .btn-secundario {
   background-color: transparent;
-  color: #007aff;
-  border: 1px solid #007aff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
 }
 .btn-secundario:hover {
-  background-color: #007aff;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  transform: translateY(-1px);
 }
+
 .btn-borrar {
   background: none;
-  color: #ff3b30;
+  color: var(--color-danger);
   font-size: 1.2rem;
   border: none;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-speed) var(--transition-easing);
 }
 .btn-borrar:hover {
   opacity: 0.7;
 }
+
 .btn-descargar-plan {
   margin-bottom: 20px;
   padding: 10px 20px;
-  cursor: pointer;
   border-radius: 12px;
-  background-color: #007aff;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   font-size: 16px;
-  transition: background-color 0.2s ease;
+  transition: 
+    background-color var(--transition-speed) var(--transition-easing),
+    transform var(--transition-speed) var(--transition-easing);
 }
 .btn-descargar-plan:hover {
-  background-color: #006ae6;
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
 }
+
 .clicked {
   transform: scale(0.95);
 }
+
 .error {
-  border-color: #ff3b30 !important;
+  border-color: var(--color-danger) !important;
 }
 
 /* =======================================================
-   CONTENEDOR PRINCIPAL (SIMULADOR)
+   5) CONTENEDOR PRINCIPAL (SIMULADOR)
 ======================================================= */
 .contenedor-simulador {
   max-width: 1000px;
-  margin: 0 auto;
-  background-color: #fff;
+  margin: 0 auto 40px auto;
+  background-color: var(--color-white);
   padding: 30px;
   border-radius: 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-bottom: 40px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow-md);
+  transition: 
+    transform var(--transition-speed) var(--transition-easing),
+    box-shadow var(--transition-speed) var(--transition-easing);
 }
 .contenedor-simulador:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 /* =======================================================
-   CAMPOS Y TABLAS
+   6) CAMPOS Y TABLAS
 ======================================================= */
 .campo {
   margin-bottom: 20px;
@@ -126,42 +171,49 @@ body {
   flex-direction: column;
   max-width: 400px;
 }
+
 .campo label {
   font-weight: 500;
   margin-bottom: 8px;
-  color: #1d1d1f;
+  color: var(--color-text);
 }
+
 .campo input {
   padding: 12px;
-  border: 1px solid #d1d1d6;
+  border: 1px solid var(--color-input-border);
   border-radius: 12px;
   font-size: 16px;
-  transition: border-color 0.3s ease;
+  transition: border-color var(--transition-speed) var(--transition-easing);
 }
+
 .campo input:focus {
-  border-color: #007aff;
+  border-color: var(--color-primary);
   outline: none;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1.5rem;
   table-layout: fixed;
 }
+
 thead th {
   text-align: center;
   font-weight: 600;
   padding: 12px 5px;
-  border-bottom: 1px solid #e5e5ea;
-  color: #1d1d1f;
-  background-color: #f8f8fa;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  background-color: var(--color-table-head);
 }
+
 tbody td {
   padding: 12px 5px;
   vertical-align: middle;
-  border-bottom: 1px solid #e5e5ea;
+  border-bottom: 1px solid var(--color-border);
   text-align: center;
 }
+
 td input[type="text"],
 td input[type="number"],
 td select {
@@ -171,109 +223,123 @@ td select {
 }
 
 /* =======================================================
-   BOTONES DE HISTORIAL
+   7) BOTONES DE HISTORIAL
 ======================================================= */
 .historial-container {
   max-width: 1000px;
   margin: 20px auto;
-  background-color: #fff;
+  background-color: var(--color-white);
   padding: 20px;
   border-radius: 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
+
 .historial-container h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #007aff;
+  color: var(--color-primary);
 }
+
 .historial-container table {
   width: 100%;
   border-collapse: collapse;
 }
+
 .historial-container th,
 .historial-container td {
-  border: 1px solid #e5e5ea;
+  border: 1px solid var(--color-border);
   text-align: center;
   padding: 10px;
 }
+
 .btn-eliminar-historial {
-  background-color: #ff3b30;
-  color: #fff;
+  background-color: var(--color-danger);
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
   padding: 5px 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: 
+    background-color var(--transition-speed) var(--transition-easing),
+    transform var(--transition-speed) var(--transition-easing);
 }
 .btn-eliminar-historial:hover {
-  background-color: #e02a24;
+  background-color: var(--color-danger-hover);
+  transform: translateY(-1px);
 }
 
 /* =======================================================
-   RESULTADO FINAL
+   8) RESULTADO FINAL
 ======================================================= */
 .resultado-final {
   margin-top: 1.5rem;
   padding: 20px;
-  background-color: #f2f8ff;
+  background-color: var(--color-result-bg);
   border-radius: 12px;
-  border: 1px solid #dae7fe;
+  border: 1px solid var(--color-result-border);
 }
+
 .resultado-final h3 {
   margin-top: 0;
   font-size: 1.4rem;
-  color: #007aff;
+  color: var(--color-primary);
   margin-bottom: 12px;
 }
 
 /* =======================================================
-   PLAN DE LIQUIDACIÓN
+   9) PLAN DE LIQUIDACIÓN
 ======================================================= */
 .plan-container-outer {
   display: none;
   max-width: 1000px;
-  margin: 0 auto;
-  margin-bottom: 20px;
+  margin: 0 auto 20px;
 }
+
 .header {
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 20px;
-  color: #1d1d1f;
+  color: var(--color-text);
   text-align: left;
 }
+
 .info-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  background: #fff;
+  background: var(--color-white);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  border: 1px solid #e5e5ea;
+  border: 1px solid var(--color-border);
 }
+
 .info-box {
   width: 48%;
   margin-bottom: 10px;
 }
+
 .info-box p {
   margin: 8px 0;
   line-height: 1.6;
 }
+
 .info-box p strong {
-  color: #007aff;
+  color: var(--color-primary);
   font-weight: 600;
 }
+
 .plan-container {
   display: flex;
   flex-wrap: wrap;
-  background-color: #fff;
+  background-color: var(--color-white);
   border-radius: 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
+
 .plan-left {
   flex: 1 1 60%;
-  background-color: #f5f5f7;
+  background-color: var(--color-background);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -282,26 +348,30 @@ td select {
   border-bottom-left-radius: 18px;
   min-height: 220px;
 }
+
 .chart {
   width: 200px;
   height: 200px;
   margin-bottom: 20px;
 }
+
 .values p {
   margin: 8px 0;
   font-weight: 500;
-  color: #1d1d1f;
+  color: var(--color-text);
   font-size: 1.1rem;
 }
+
 .ahorro {
   margin-top: 20px;
-  background-color: #007aff;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   padding: 12px 24px;
   border-radius: 12px;
   font-weight: bold;
   text-align: center;
 }
+
 .plan-right {
   flex: 1 1 40%;
   display: flex;
@@ -312,14 +382,15 @@ td select {
   border-top-right-radius: 18px;
   border-bottom-right-radius: 18px;
 }
+
 .plan-card {
-  border: 1px solid #e5e5ea;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   text-align: center;
   padding: 15px;
-  background-color: #fff;
+  background-color: var(--color-white);
   margin: 10px;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-speed) var(--transition-easing);
   flex: 1 1 30%;
   min-width: 120px;
 }
@@ -333,18 +404,19 @@ td select {
 }
 .plan-card h4 {
   font-size: 1.2rem;
-  color: #007aff;
+  color: var(--color-primary);
   margin: 0;
 }
+
 .tabla-deudas {
-  background: #fff;
-  border: 1px solid #e5e5ea;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   margin: 20px 0;
 }
 .tabla-deudas h2 {
-  background-color: #007aff;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   margin: 0;
   padding: 12px;
   font-size: 1rem;
@@ -369,14 +441,14 @@ td select {
 }
 
 /* =======================================================
-   DISCLAIMER Y FOOTER
+   10) DISCLAIMER Y FOOTER
 ======================================================= */
 .disclaimer {
-  background-color: #fff;
+  background-color: var(--color-white);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  border: 1px solid #e5e5ea;
+  border: 1px solid var(--color-border);
 }
 .disclaimer p {
   margin-bottom: 10px;
@@ -384,16 +456,18 @@ td select {
   font-size: 0.75rem;
   color: #666;
 }
+
 .footer {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff;
+  background-color: var(--color-white);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #e5e5ea;
+  border: 1px solid var(--color-border);
 }
+
 .footer .asesor-info {
   font-size: 0.9rem;
   color: #666;
@@ -402,21 +476,23 @@ td select {
   margin-bottom: 5px;
 }
 .footer .asesor-info p strong {
-  color: #007aff;
+  color: var(--color-primary);
 }
 
 /* =======================================================
-   RESPONSIVE
+   11) RESPONSIVE
 ======================================================= */
 @media (max-width: 768px) {
   .contenedor-simulador {
     padding: 15px;
   }
+
   table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
   }
+
   .info-container {
     flex-direction: column;
   }
@@ -424,15 +500,18 @@ td select {
     width: 100%;
     margin-bottom: 15px;
   }
+
   .plan-container {
     flex-direction: column;
   }
+
   .plan-left,
   .plan-right {
     width: 100%;
     border-radius: 12px;
     margin-bottom: 15px;
   }
+
   th:nth-child(n),
   td:nth-child(n) {
     width: auto;
@@ -441,7 +520,7 @@ td select {
 }
 
 /* =======================================================
-   INDICADOR DE CARGA
+   12) INDICADOR DE CARGA
 ======================================================= */
 .indicador-carga {
   position: fixed;
@@ -455,8 +534,9 @@ td select {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  color: white;
+  color: var(--color-white);
 }
+
 .spinner {
   width: 50px;
   height: 50px;
@@ -466,7 +546,12 @@ td select {
   animation: spin 1s linear infinite;
   margin-bottom: 15px;
 }
+
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
