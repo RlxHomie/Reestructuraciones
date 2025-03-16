@@ -1,114 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>Optimizado</title>
-</head>
-<body>
-
-<!-- Elementos de UI, tabla y botones -->
-<button id="btnAgregarFila">Agregar Fila</button>
-<button id="btnCalcular">Calcular</button>
-<button id="btnReAnalizar">Re-Analizar</button>
-<button id="btnMostrarHistorial">Mostrar Historial</button>
-<button id="btnCerrarHistorial">Cerrar Historial</button>
-<button id="btnDescargarPlan">Descargar Plan</button>
-<button id="btnContratar">Contratar</button>
-
-<!-- Inputs adicionales -->
-<input id="nombreDeudor" type="text" placeholder="Nombre Deudor"/>
-<input id="numCuotas" type="number" value="12"/>
-
-<!-- Aquí mostraremos el resultado final (oculto inicialmente) -->
-<div id="resultadoFinal" style="display:none;"></div>
-
-<!-- Aquí podrías mostrar tu plan de pagos, etc. (oculto inicialmente) -->
-<div id="planContainerOuter" style="display:none;">Plan Container</div>
-
-<!-- Aquí irá el historial (oculto inicialmente) -->
-<div id="historialContainer" style="display:none;">Historial</div>
-
-<!-- Tabla principal de deudas -->
-<table>
-  <thead>
-    <tr>
-      <th>N° Contrato</th>
-      <th>Tipo Producto</th>
-      <th>Entidad</th>
-      <th>Importe</th>
-      <th>% Descuento</th>
-      <th>Importe c/desc</th>
-      <th>Eliminar</th>
-    </tr>
-  </thead>
-  <tbody id="tablaDeudas"></tbody>
-</table>
-
-<!-- Gráfico con Chart.js -->
-<canvas id="myChart"></canvas>
-
-<!-- Incluye Chart.js desde CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
 /**********************************************************
  * VARIABLES
  **********************************************************/
 let ENTIDADES = [];
 let TIPOS_PRODUCTO = [];
-let myChart = null; // Para el gráfico con Chart.js
+let myChart = null; // Chart.js
 
-// Referencias a elementos del DOM para reutilizar
-const tablaDeudasBody   = document.getElementById('tablaDeudas');
-const btnAgregarFila    = document.getElementById('btnAgregarFila');
-const btnCalcular       = document.getElementById('btnCalcular');
-const btnReAnalizar     = document.getElementById('btnReAnalizar');
-const btnMostrarHistorial = document.getElementById('btnMostrarHistorial');
-const btnCerrarHistorial = document.getElementById('btnCerrarHistorial');
-const btnDescargarPlan  = document.getElementById('btnDescargarPlan');
-const btnContratar      = document.getElementById('btnContratar');
-
-/**********************************************************
- * EVENTOS DOM
- **********************************************************/
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1) Carga de datos desde Google Sheets
+  // 1) Cargar arrays de Google Sheets (doGet)
   await cargarListasDesdeSheets();
 
-  // 2) Asignar eventos a botones
-  btnAgregarFila.addEventListener('click', agregarFila);
-  btnCalcular.addEventListener('click', calcular);
-  btnReAnalizar.addEventListener('click', reAnalizar);
-  btnMostrarHistorial.addEventListener('click', mostrarHistorial);
-  btnCerrarHistorial.addEventListener('click', ocultarHistorial);
-  btnDescargarPlan.addEventListener('click', descargarPlan);
-  btnContratar.addEventListener('click', enviarDatosAGoogleSheets);
+  // 2) Asignar eventos
+  document.getElementById('btnAgregarFila').addEventListener('click', agregarFila);
+  document.getElementById('btnCalcular').addEventListener('click', calcular);
+  document.getElementById('btnReAnalizar').addEventListener('click', reAnalizar);
+  document.getElementById('btnMostrarHistorial').addEventListener('click', mostrarHistorial);
+  document.getElementById('btnCerrarHistorial').addEventListener('click', ocultarHistorial);
+  document.getElementById('btnDescargarPlan').addEventListener('click', descargarPlan);
+  document.getElementById('btnContratar').addEventListener('click', enviarDatosAGoogleSheets);
 
   // Iniciar la tabla con 1 fila
   agregarFila();
 });
 
-// Manejo de input con "debounce" para optimizar recálculos al escribir
-function debounce(func, wait) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
-
-tablaDeudasBody.addEventListener('input', debounce((evt) => {
-  if(evt.target.tagName === 'INPUT'){
-    const fila = evt.target.closest('tr');
-    if(fila) recalcularFila(fila);
-  }
-}, 300));
-
 /**********************************************************
  * CARGA DE DATOS (doGet)
  **********************************************************/
-const cargarListasDesdeSheets = async () => {
-  // Sustituye esta URL por tu propia URL de Apps Script si hace falta
+async function cargarListasDesdeSheets() {
   const url = "https://script.google.com/macros/s/AKfycbyn0xR5H88NT0m_QQc9GEta46hoOiLJzgxb5WVcW19A7yqxwjb-4XUEb06-oHr48dOC/exec";
   try {
     const resp = await fetch(url);
@@ -123,70 +40,75 @@ const cargarListasDesdeSheets = async () => {
     ENTIDADES = [];
     TIPOS_PRODUCTO = [];
   }
-};
-
-/**********************************************************
- * FUNCIONES AUXILIARES PARA CREAR ELEMENTOS
- **********************************************************/
-const crearOpcion = (valor, texto, title = '') => {
-  const option = document.createElement('option');
-  option.value = valor;
-  option.textContent = texto;
-  if(title) option.title = title;
-  return option;
-};
-
-const crearInput = (type, placeholder = '') => {
-  const inp = document.createElement('input');
-  inp.type = type;
-  if(placeholder) inp.placeholder = placeholder;
-  return inp;
-};
-
-const crearSelectConOpciones = (opciones) => {
-  const sel = document.createElement('select');
-  opciones.forEach((op) => {
-    // Limita la vista a 45 caracteres si es muy largo
-    const displayText = op.length > 45 ? op.substring(0,42) + "..." : op;
-    const nuevaOpcion = crearOpcion(op, displayText, op);
-    sel.appendChild(nuevaOpcion);
-  });
-  return sel;
-};
+}
 
 /**********************************************************
  * TABLA DE DEUDAS
  **********************************************************/
-const agregarFila = () => {
+const tablaDeudasBody = document.getElementById('tablaDeudas');
+
+// Manejo de input con "debounce"
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+tablaDeudasBody.addEventListener('input', debounce((evt) => {
+  if(evt.target.tagName === 'INPUT'){
+    const fila = evt.target.closest('tr');
+    if(fila) recalcularFila(fila);
+  }
+}, 300));
+
+function agregarFila(){
   const tr = document.createElement('tr');
 
-  // Col 1) N° Contrato
+  // Col 1) N° Contrato (input text)
   const tdContrato = document.createElement('td');
-  const inContrato = crearInput('text', 'Ej: 12345');
+  const inContrato = document.createElement('input');
+  inContrato.type = 'text';
+  inContrato.placeholder = 'Ej: 12345';
   tdContrato.appendChild(inContrato);
 
-  // Col 2) Tipo Producto
+  // Col 2) Tipo Producto (select)
   const tdTipo = document.createElement('td');
   const selTipo = document.createElement('select');
   TIPOS_PRODUCTO.forEach(tp => {
-    const opcion = crearOpcion(tp, tp);
-    selTipo.appendChild(opcion);
+    const option = document.createElement('option');
+    option.value = tp;
+    option.textContent = tp;
+    selTipo.appendChild(option);
   });
   tdTipo.appendChild(selTipo);
 
-  // Col 3) Entidad
+  // Col 3) Entidad (select)
   const tdEntidad = document.createElement('td');
-  const selEntidad = crearSelectConOpciones(ENTIDADES);
+  const selEntidad = document.createElement('select');
+  ENTIDADES.forEach(ent => {
+    const option = document.createElement('option');
+    option.value = ent;
+    // si es muy largo, recortar para visual
+    let displayText = (ent.length>45)? ent.substring(0,42)+"...": ent;
+    option.textContent = displayText;
+    option.title = ent;
+    selEntidad.appendChild(option);
+  });
   tdEntidad.appendChild(selEntidad);
 
   // Col 4) Importe
   const tdImporte = document.createElement('td');
-  const inImporte = crearInput('number', '3000');
+  const inImporte = document.createElement('input');
+  inImporte.type = 'number';
+  inImporte.placeholder = '3000';
   tdImporte.appendChild(inImporte);
 
   // Col 5) % Descuento
   const tdDesc = document.createElement('td');
-  const inDesc = crearInput('number', '30');
+  const inDesc = document.createElement('input');
+  inDesc.type = 'number';
+  inDesc.placeholder = '30';
   tdDesc.appendChild(inDesc);
 
   // Col 6) Importe con desc
@@ -202,11 +124,10 @@ const agregarFila = () => {
   btnEliminar.textContent = '🗑';
   btnEliminar.addEventListener('click', () => {
     tablaDeudasBody.removeChild(tr);
-    calcular(); // Re-calcular si se elimina una fila
+    calcular(); // reCalcular
   });
   tdEliminar.appendChild(btnEliminar);
 
-  // Agregar tds al tr
   tr.appendChild(tdContrato);
   tr.appendChild(tdTipo);
   tr.appendChild(tdEntidad);
@@ -215,11 +136,10 @@ const agregarFila = () => {
   tr.appendChild(tdConDesc);
   tr.appendChild(tdEliminar);
 
-  // Agregar tr al tbody
   tablaDeudasBody.appendChild(tr);
-};
+}
 
-const recalcularFila = (fila) => {
+function recalcularFila(fila){
   const inImporte = fila.querySelector('td:nth-child(4) input');
   const inDesc    = fila.querySelector('td:nth-child(5) input');
   const spConDesc = fila.querySelector('td:nth-child(6) span');
@@ -228,66 +148,26 @@ const recalcularFila = (fila) => {
   const desc     = parseFloat(inDesc.value) || 0;
   const conDesc  = importe * (1 - desc/100);
   spConDesc.textContent = conDesc.toFixed(2);
-};
+}
 
 /**********************************************************
- * CALCULAR (EJEMPLO FUNCIONAL)
+ * CALCULAR
  **********************************************************/
 function calcular(){
-  // 1) Obtenemos todas las filas de la tabla
-  const filas = document.querySelectorAll('#tablaDeudas tr');
-
-  let totalImporte = 0;
-  let totalConDesc = 0;
-
-  // 2) Para cada fila, acumulamos importes
-  filas.forEach((tr) => {
-    const inImporte = tr.querySelector('td:nth-child(4) input');
-    const inDesc    = tr.querySelector('td:nth-child(5) input');
-    const importe = parseFloat(inImporte.value) || 0;
-    const descuento = parseFloat(inDesc.value) || 0;
-    const conDesc = importe * (1 - descuento/100);
-
-    totalImporte += importe;
-    totalConDesc += conDesc;
-  });
-
-  // 3) Mostramos el resultado en pantalla
-  const ahorro = totalImporte - totalConDesc;
-  const resultadoDiv = document.getElementById('resultadoFinal');
-  resultadoDiv.innerHTML = `
-    <p><strong>Importe Total:</strong> ${totalImporte.toFixed(2)}</p>
-    <p><strong>Importe c/Desc:</strong> ${totalConDesc.toFixed(2)}</p>
-    <p><strong>Ahorro:</strong> ${ahorro.toFixed(2)}</p>
-  `;
-  resultadoDiv.style.display = 'block';
-
-  // 4) Actualizamos el gráfico (si lo deseas)
-  if(myChart) myChart.destroy();
-  actualizarGrafico(ahorro, totalConDesc);
-
-  // 5) Mostramos la sección del plan
-  document.getElementById('planContainerOuter').style.display = 'block';
+  console.log("Aquí pones la lógica para sumar deudas, etc. y actualizar plan, chart...");
+  // Semejante a tu simulador actual
 }
 
 /**********************************************************
  * RE-ANALIZAR
  **********************************************************/
 function reAnalizar(){
-  // Limpia la tabla y oculta resultados
   tablaDeudasBody.innerHTML = '';
-  document.getElementById('resultadoFinal').style.display = 'none';
-  document.getElementById('planContainerOuter').style.display = 'none';
-  document.getElementById('nombreDeudor').value = '';
-  document.getElementById('numCuotas').value = '12';
-
-  // Si hay un gráfico, lo destruimos
-  if(myChart) {
-    myChart.destroy();
-    myChart = null;
-  }
-
-  // Agrega de nuevo la fila inicial
+  document.getElementById('resultadoFinal').style.display='none';
+  document.getElementById('planContainerOuter').style.display='none';
+  document.getElementById('nombreDeudor').value='';
+  document.getElementById('numCuotas').value='12';
+  if(myChart) { myChart.destroy(); myChart=null; }
   agregarFila();
 }
 
@@ -295,12 +175,11 @@ function reAnalizar(){
  * HISTORIAL
  **********************************************************/
 function mostrarHistorial(){
-  document.getElementById('historialContainer').style.display = 'block';
-  // Lógica para llenar tu tabla de historial si procede
+  document.getElementById('historialContainer').style.display='block';
+  // Lógica para llenar tu tablaHistorial
 }
-
 function ocultarHistorial(){
-  document.getElementById('historialContainer').style.display = 'none';
+  document.getElementById('historialContainer').style.display='none';
 }
 
 /**********************************************************
@@ -315,7 +194,7 @@ function descargarPlan(){
  **********************************************************/
 function enviarDatosAGoogleSheets(){
   console.log("Recopilar datos y POST al Apps Script doPost...");
-  // Similar a tu envío con fetch.
+  // Similar a tu envío con fetch. 
   // Recorre filas, arma objeto JSON con {folio, filas: [...]} etc.
   // fetch(...) ...
 }
@@ -325,40 +204,30 @@ function enviarDatosAGoogleSheets(){
  **********************************************************/
 function actualizarGrafico(ahorro, sumaDescontada){
   const ctx = document.getElementById('myChart').getContext('2d');
-  if(myChart) myChart.destroy(); 
+  if(myChart) myChart.destroy();
 
   const data = {
-    labels: ['Ahorro','Pago'],
-    datasets: [{
-      data: [ahorro, sumaDescontada],
-      backgroundColor: ['#34c759','#007aff']  // <-- Manteniendo colores
+    labels:['Ahorro','Pago'],
+    datasets:[{
+      data:[ahorro, sumaDescontada],
+      backgroundColor:['#34c759','#007aff']
     }]
   };
-
   const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label(ctx) {
-            let label = ctx.label || '';
-            let val = ctx.parsed;
-            return `${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})}`;
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{ position:'top' },
+      tooltip:{
+        callbacks:{
+          label(ctx){
+            let label=ctx.label||'';
+            let val=ctx.parsed;
+            return ${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})};
           }
         }
       }
     }
   };
-
-  // Creamos el gráfico tipo "doughnut"
-  myChart = new Chart(ctx, {
-    type: 'doughnut',
-    data,
-    options
-  });
+  myChart = new Chart(ctx,{type:'doughnut',data,options});
 }
-</script>
-</body>
-</html>
