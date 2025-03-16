@@ -47,7 +47,7 @@
 <!-- Gráfico con Chart.js -->
 <canvas id="myChart"></canvas>
 
-<!-- Incluye Chart.js (si no lo tienes, añádelo antes de tu script) -->
+<!-- Incluye Chart.js desde CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -244,11 +244,8 @@ function calcular(){
   filas.forEach((tr) => {
     const inImporte = tr.querySelector('td:nth-child(4) input');
     const inDesc    = tr.querySelector('td:nth-child(5) input');
-    const spConDesc = tr.querySelector('td:nth-child(6) span');
-
     const importe = parseFloat(inImporte.value) || 0;
     const descuento = parseFloat(inDesc.value) || 0;
-    // También podríamos tomar spConDesc directamente, pero lo recalculamos:
     const conDesc = importe * (1 - descuento/100);
 
     totalImporte += importe;
@@ -256,7 +253,6 @@ function calcular(){
   });
 
   // 3) Mostramos el resultado en pantalla
-  // Ejemplo: Mostramos importe total, importe con descuento y ahorro
   const ahorro = totalImporte - totalConDesc;
   const resultadoDiv = document.getElementById('resultadoFinal');
   resultadoDiv.innerHTML = `
@@ -335,8 +331,7 @@ function actualizarGrafico(ahorro, sumaDescontada){
     labels: ['Ahorro','Pago'],
     datasets: [{
       data: [ahorro, sumaDescontada],
-      // Puedes usar tus propios colores si gustas
-      backgroundColor: ['#34c759','#007aff']
+      backgroundColor: ['#34c759','#007aff']  // <-- Manteniendo colores
     }]
   };
 
@@ -350,7 +345,6 @@ function actualizarGrafico(ahorro, sumaDescontada){
           label(ctx) {
             let label = ctx.label || '';
             let val = ctx.parsed;
-            // Personaliza formato moneda si gustas
             return `${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})}`;
           }
         }
@@ -358,7 +352,7 @@ function actualizarGrafico(ahorro, sumaDescontada){
     }
   };
 
-  // Creamos el gráfico doughnut
+  // Creamos el gráfico tipo "doughnut"
   myChart = new Chart(ctx, {
     type: 'doughnut',
     data,
