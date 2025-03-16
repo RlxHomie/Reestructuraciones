@@ -15,13 +15,20 @@
 <button id="btnDescargarPlan">Descargar Plan</button>
 <button id="btnContratar">Contratar</button>
 
+<!-- Inputs adicionales -->
 <input id="nombreDeudor" type="text" placeholder="Nombre Deudor"/>
 <input id="numCuotas" type="number" value="12"/>
 
-<div id="resultadoFinal" style="display:none;">Resultado</div>
+<!-- Aquí mostraremos el resultado final (oculto inicialmente) -->
+<div id="resultadoFinal" style="display:none;"></div>
+
+<!-- Aquí podrías mostrar tu plan de pagos, etc. (oculto inicialmente) -->
 <div id="planContainerOuter" style="display:none;">Plan Container</div>
+
+<!-- Aquí irá el historial (oculto inicialmente) -->
 <div id="historialContainer" style="display:none;">Historial</div>
 
+<!-- Tabla principal de deudas -->
 <table>
   <thead>
     <tr>
@@ -37,7 +44,11 @@
   <tbody id="tablaDeudas"></tbody>
 </table>
 
+<!-- Gráfico con Chart.js -->
 <canvas id="myChart"></canvas>
+
+<!-- Incluye Chart.js (si no lo tienes, añádelo antes de tu script) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 /**********************************************************
@@ -45,25 +56,26 @@
  **********************************************************/
 let ENTIDADES = [];
 let TIPOS_PRODUCTO = [];
-let myChart = null; // Chart.js
+let myChart = null; // Para el gráfico con Chart.js
 
 // Referencias a elementos del DOM para reutilizar
-const tablaDeudasBody = document.getElementById('tablaDeudas');
-const btnAgregarFila = document.getElementById('btnAgregarFila');
-const btnCalcular = document.getElementById('btnCalcular');
-const btnReAnalizar = document.getElementById('btnReAnalizar');
+const tablaDeudasBody   = document.getElementById('tablaDeudas');
+const btnAgregarFila    = document.getElementById('btnAgregarFila');
+const btnCalcular       = document.getElementById('btnCalcular');
+const btnReAnalizar     = document.getElementById('btnReAnalizar');
 const btnMostrarHistorial = document.getElementById('btnMostrarHistorial');
 const btnCerrarHistorial = document.getElementById('btnCerrarHistorial');
-const btnDescargarPlan = document.getElementById('btnDescargarPlan');
-const btnContratar = document.getElementById('btnContratar');
+const btnDescargarPlan  = document.getElementById('btnDescargarPlan');
+const btnContratar      = document.getElementById('btnContratar');
 
 /**********************************************************
  * EVENTOS DOM
  **********************************************************/
 document.addEventListener('DOMContentLoaded', async () => {
+  // 1) Carga de datos desde Google Sheets
   await cargarListasDesdeSheets();
 
-  // Asignar eventos
+  // 2) Asignar eventos a botones
   btnAgregarFila.addEventListener('click', agregarFila);
   btnCalcular.addEventListener('click', calcular);
   btnReAnalizar.addEventListener('click', reAnalizar);
@@ -72,11 +84,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnDescargarPlan.addEventListener('click', descargarPlan);
   btnContratar.addEventListener('click', enviarDatosAGoogleSheets);
 
-  // Iniciar con 1 fila
+  // Iniciar la tabla con 1 fila
   agregarFila();
 });
 
-// Manejo de input con "debounce" para optimizar recálculos
+// Manejo de input con "debounce" para optimizar recálculos al escribir
 function debounce(func, wait) {
   let timeout;
   return (...args) => {
@@ -96,6 +108,7 @@ tablaDeudasBody.addEventListener('input', debounce((evt) => {
  * CARGA DE DATOS (doGet)
  **********************************************************/
 const cargarListasDesdeSheets = async () => {
+  // Sustituye esta URL por tu propia URL de Apps Script si hace falta
   const url = "https://script.google.com/macros/s/AKfycbyn0xR5H88NT0m_QQc9GEta46hoOiLJzgxb5WVcW19A7yqxwjb-4XUEb06-oHr48dOC/exec";
   try {
     const resp = await fetch(url);
@@ -133,7 +146,7 @@ const crearInput = (type, placeholder = '') => {
 const crearSelectConOpciones = (opciones) => {
   const sel = document.createElement('select');
   opciones.forEach((op) => {
-    // Limita la vista a 45 caracteres
+    // Limita la vista a 45 caracteres si es muy largo
     const displayText = op.length > 45 ? op.substring(0,42) + "..." : op;
     const nuevaOpcion = crearOpcion(op, displayText, op);
     sel.appendChild(nuevaOpcion);
@@ -189,7 +202,7 @@ const agregarFila = () => {
   btnEliminar.textContent = '🗑';
   btnEliminar.addEventListener('click', () => {
     tablaDeudasBody.removeChild(tr);
-    calcular(); // re-calcular cuando se elimina fila
+    calcular(); // Re-calcular si se elimina una fila
   });
   tdEliminar.appendChild(btnEliminar);
 
@@ -218,26 +231,67 @@ const recalcularFila = (fila) => {
 };
 
 /**********************************************************
- * CALCULAR
+ * CALCULAR (EJEMPLO FUNCIONAL)
  **********************************************************/
 function calcular(){
-  console.log("Aquí pones la lógica para sumar deudas, etc. y actualizar plan, chart...");
-  // Semejante a tu simulador actual
+  // 1) Obtenemos todas las filas de la tabla
+  const filas = document.querySelectorAll('#tablaDeudas tr');
+
+  let totalImporte = 0;
+  let totalConDesc = 0;
+
+  // 2) Para cada fila, acumulamos importes
+  filas.forEach((tr) => {
+    const inImporte = tr.querySelector('td:nth-child(4) input');
+    const inDesc    = tr.querySelector('td:nth-child(5) input');
+    const spConDesc = tr.querySelector('td:nth-child(6) span');
+
+    const importe = parseFloat(inImporte.value) || 0;
+    const descuento = parseFloat(inDesc.value) || 0;
+    // También podríamos tomar spConDesc directamente, pero lo recalculamos:
+    const conDesc = importe * (1 - descuento/100);
+
+    totalImporte += importe;
+    totalConDesc += conDesc;
+  });
+
+  // 3) Mostramos el resultado en pantalla
+  // Ejemplo: Mostramos importe total, importe con descuento y ahorro
+  const ahorro = totalImporte - totalConDesc;
+  const resultadoDiv = document.getElementById('resultadoFinal');
+  resultadoDiv.innerHTML = `
+    <p><strong>Importe Total:</strong> ${totalImporte.toFixed(2)}</p>
+    <p><strong>Importe c/Desc:</strong> ${totalConDesc.toFixed(2)}</p>
+    <p><strong>Ahorro:</strong> ${ahorro.toFixed(2)}</p>
+  `;
+  resultadoDiv.style.display = 'block';
+
+  // 4) Actualizamos el gráfico (si lo deseas)
+  if(myChart) myChart.destroy();
+  actualizarGrafico(ahorro, totalConDesc);
+
+  // 5) Mostramos la sección del plan
+  document.getElementById('planContainerOuter').style.display = 'block';
 }
 
 /**********************************************************
  * RE-ANALIZAR
  **********************************************************/
 function reAnalizar(){
+  // Limpia la tabla y oculta resultados
   tablaDeudasBody.innerHTML = '';
-  document.getElementById('resultadoFinal').style.display='none';
-  document.getElementById('planContainerOuter').style.display='none';
-  document.getElementById('nombreDeudor').value='';
-  document.getElementById('numCuotas').value='12';
+  document.getElementById('resultadoFinal').style.display = 'none';
+  document.getElementById('planContainerOuter').style.display = 'none';
+  document.getElementById('nombreDeudor').value = '';
+  document.getElementById('numCuotas').value = '12';
+
+  // Si hay un gráfico, lo destruimos
   if(myChart) {
     myChart.destroy();
     myChart = null;
   }
+
+  // Agrega de nuevo la fila inicial
   agregarFila();
 }
 
@@ -245,12 +299,12 @@ function reAnalizar(){
  * HISTORIAL
  **********************************************************/
 function mostrarHistorial(){
-  document.getElementById('historialContainer').style.display='block';
-  // Lógica para llenar tu tablaHistorial
+  document.getElementById('historialContainer').style.display = 'block';
+  // Lógica para llenar tu tabla de historial si procede
 }
 
 function ocultarHistorial(){
-  document.getElementById('historialContainer').style.display='none';
+  document.getElementById('historialContainer').style.display = 'none';
 }
 
 /**********************************************************
@@ -265,7 +319,7 @@ function descargarPlan(){
  **********************************************************/
 function enviarDatosAGoogleSheets(){
   console.log("Recopilar datos y POST al Apps Script doPost...");
-  // Similar a tu envío con fetch. 
+  // Similar a tu envío con fetch.
   // Recorre filas, arma objeto JSON con {folio, filas: [...]} etc.
   // fetch(...) ...
 }
@@ -275,15 +329,17 @@ function enviarDatosAGoogleSheets(){
  **********************************************************/
 function actualizarGrafico(ahorro, sumaDescontada){
   const ctx = document.getElementById('myChart').getContext('2d');
-  if(myChart) myChart.destroy();
+  if(myChart) myChart.destroy(); 
 
   const data = {
     labels: ['Ahorro','Pago'],
     datasets: [{
       data: [ahorro, sumaDescontada],
+      // Puedes usar tus propios colores si gustas
       backgroundColor: ['#34c759','#007aff']
     }]
   };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -294,13 +350,20 @@ function actualizarGrafico(ahorro, sumaDescontada){
           label(ctx) {
             let label = ctx.label || '';
             let val = ctx.parsed;
+            // Personaliza formato moneda si gustas
             return `${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})}`;
           }
         }
       }
     }
   };
-  myChart = new Chart(ctx, {type: 'doughnut', data, options});
+
+  // Creamos el gráfico doughnut
+  myChart = new Chart(ctx, {
+    type: 'doughnut',
+    data,
+    options
+  });
 }
 </script>
 </body>
