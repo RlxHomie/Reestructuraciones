@@ -1,112 +1,43 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
   <meta charset="utf-8"/>
-  <!-- Para que la página sea responsive en pantallas pequeñas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Optimizado</title>
-  <style>
-    /* Opcional: estilos mínimos para que la tabla sea más legible */
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      max-width: 800px;
-      margin: 1rem auto;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.5rem;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    /* Centra elementos principales y botones */
-    main, header, footer, .button-group {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin: 1rem;
-    }
-    .button-group button, .button-group input {
-      margin: 0.25rem;
-    }
-    #historialContainer {
-      margin: 1rem auto;
-      max-width: 800px;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      background-color: #fafafa;
-    }
-    #myChart {
-      max-width: 500px;
-      height: 300px;
-      margin: 1rem auto;
-      display: block;
-    }
-  </style>
 </head>
 <body>
 
-<header>
-  <h1>Plan de Deudas</h1>
-</header>
+<!-- Elementos de UI, tabla y botones -->
+<button id="btnAgregarFila">Agregar Fila</button>
+<button id="btnCalcular">Calcular</button>
+<button id="btnReAnalizar">Re-Analizar</button>
+<button id="btnMostrarHistorial">Mostrar Historial</button>
+<button id="btnCerrarHistorial">Cerrar Historial</button>
+<button id="btnDescargarPlan">Descargar Plan</button>
+<button id="btnContratar">Contratar</button>
 
-<main>
-  <section class="button-group">
-    <!-- Botones de acciones principales -->
-    <button id="btnAgregarFila">Agregar Fila</button>
-    <button id="btnCalcular">Calcular</button>
-    <button id="btnReAnalizar">Re-Analizar</button>
-    <button id="btnMostrarHistorial">Mostrar Historial</button>
-    <button id="btnCerrarHistorial">Cerrar Historial</button>
-    <button id="btnDescargarPlan">Descargar Plan</button>
-    <button id="btnContratar">Contratar</button>
-  </section>
+<input id="nombreDeudor" type="text" placeholder="Nombre Deudor"/>
+<input id="numCuotas" type="number" value="12"/>
 
-  <section class="button-group">
-    <!-- Inputs para nombre de deudor y número de cuotas -->
-    <input id="nombreDeudor" type="text" placeholder="Nombre Deudor" />
-    <input id="numCuotas" type="number" value="12" />
-  </section>
+<div id="resultadoFinal" style="display:none;">Resultado</div>
+<div id="planContainerOuter" style="display:none;">Plan Container</div>
+<div id="historialContainer" style="display:none;">Historial</div>
 
-  <!-- Secciones para mostrar resultados y plan -->
-  <section id="resultadoFinal" style="display:none; margin: 1rem auto;">
-    Resultado
-  </section>
-  <section id="planContainerOuter" style="display:none; margin: 1rem auto;">
-    Plan Container
-  </section>
+<table>
+  <thead>
+    <tr>
+      <th>N° Contrato</th>
+      <th>Tipo Producto</th>
+      <th>Entidad</th>
+      <th>Importe</th>
+      <th>% Descuento</th>
+      <th>Importe c/desc</th>
+      <th>Eliminar</th>
+    </tr>
+  </thead>
+  <tbody id="tablaDeudas"></tbody>
+</table>
 
-  <!-- Historial de deudas -->
-  <section id="historialContainer" style="display:none;">
-    Historial
-  </section>
-
-  <!-- Tabla de deudas -->
-  <table>
-    <thead>
-      <tr>
-        <th>N° Contrato</th>
-        <th>Tipo Producto</th>
-        <th>Entidad</th>
-        <th>Importe</th>
-        <th>% Descuento</th>
-        <th>Importe c/desc</th>
-        <th>Eliminar</th>
-      </tr>
-    </thead>
-    <tbody id="tablaDeudas"></tbody>
-  </table>
-
-  <!-- Gráfico -->
-  <canvas id="myChart"></canvas>
-</main>
-
-<footer>
-  <!-- Pie de página opcional, si lo necesitas -->
-</footer>
+<canvas id="myChart"></canvas>
 
 <script>
 /**********************************************************
@@ -204,7 +135,8 @@ const crearSelectConOpciones = (opciones) => {
   opciones.forEach((op) => {
     // Limita la vista a 45 caracteres
     const displayText = op.length > 45 ? op.substring(0,42) + "..." : op;
-    sel.appendChild(crearOpcion(op, displayText, op));
+    const nuevaOpcion = crearOpcion(op, displayText, op);
+    sel.appendChild(nuevaOpcion);
   });
   return sel;
 };
@@ -224,7 +156,8 @@ const agregarFila = () => {
   const tdTipo = document.createElement('td');
   const selTipo = document.createElement('select');
   TIPOS_PRODUCTO.forEach(tp => {
-    selTipo.appendChild(crearOpcion(tp, tp));
+    const opcion = crearOpcion(tp, tp);
+    selTipo.appendChild(opcion);
   });
   tdTipo.appendChild(selTipo);
 
@@ -278,9 +211,9 @@ const recalcularFila = (fila) => {
   const inDesc    = fila.querySelector('td:nth-child(5) input');
   const spConDesc = fila.querySelector('td:nth-child(6) span');
 
-  const importe = parseFloat(inImporte.value) || 0;
-  const desc = parseFloat(inDesc.value) || 0;
-  const conDesc = importe * (1 - desc / 100);
+  const importe  = parseFloat(inImporte.value) || 0;
+  const desc     = parseFloat(inDesc.value) || 0;
+  const conDesc  = importe * (1 - desc/100);
   spConDesc.textContent = conDesc.toFixed(2);
 };
 
@@ -297,10 +230,10 @@ function calcular(){
  **********************************************************/
 function reAnalizar(){
   tablaDeudasBody.innerHTML = '';
-  document.getElementById('resultadoFinal').style.display = 'none';
-  document.getElementById('planContainerOuter').style.display = 'none';
-  document.getElementById('nombreDeudor').value = '';
-  document.getElementById('numCuotas').value = '12';
+  document.getElementById('resultadoFinal').style.display='none';
+  document.getElementById('planContainerOuter').style.display='none';
+  document.getElementById('nombreDeudor').value='';
+  document.getElementById('numCuotas').value='12';
   if(myChart) {
     myChart.destroy();
     myChart = null;
@@ -312,12 +245,12 @@ function reAnalizar(){
  * HISTORIAL
  **********************************************************/
 function mostrarHistorial(){
-  document.getElementById('historialContainer').style.display = 'block';
+  document.getElementById('historialContainer').style.display='block';
   // Lógica para llenar tu tablaHistorial
 }
 
 function ocultarHistorial(){
-  document.getElementById('historialContainer').style.display = 'none';
+  document.getElementById('historialContainer').style.display='none';
 }
 
 /**********************************************************
@@ -332,7 +265,7 @@ function descargarPlan(){
  **********************************************************/
 function enviarDatosAGoogleSheets(){
   console.log("Recopilar datos y POST al Apps Script doPost...");
-  // Similar a tu envío con fetch.
+  // Similar a tu envío con fetch. 
   // Recorre filas, arma objeto JSON con {folio, filas: [...]} etc.
   // fetch(...) ...
 }
@@ -361,7 +294,7 @@ function actualizarGrafico(ahorro, sumaDescontada){
           label(ctx) {
             let label = ctx.label || '';
             let val = ctx.parsed;
-            return `${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})}`;
+            return ${label}: €${val.toLocaleString('es-ES',{minimumFractionDigits:2})};
           }
         }
       }
@@ -370,6 +303,5 @@ function actualizarGrafico(ahorro, sumaDescontada){
   myChart = new Chart(ctx, {type: 'doughnut', data, options});
 }
 </script>
-
 </body>
 </html>
