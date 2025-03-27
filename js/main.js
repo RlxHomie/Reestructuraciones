@@ -60,7 +60,7 @@ function confirmarAccion(mensaje, accionSi) {
  * GoogleSheetsModule
  ********************************************/
 const GoogleSheetsModule = (function(){
-  const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzqGQkEbUcxT_1PnNwpptV5wSMKedyg9Wb2ffOi5HK8xamFcfeH6NrW04ygrLrusCUl/exec";
+  const GOOGLE_SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwKe6xmdWmgIPLCH1_VatxSuw-VUyPT5DGC41cKhwm3oYsYLY3Yx_6FTx_fHNJAiK5W/exec";
   // ↑ Cambia esta URL por la tuya propia de Apps Script
 
   let entidades = [];
