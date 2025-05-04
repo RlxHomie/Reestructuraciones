@@ -1,188 +1,301 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0071e3" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>DMD - Simulador de Reestructuración</title>
-  
-  <!-- CHART.JS para el gráfico (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- Hoja de estilos principal -->
-  <link rel="stylesheet" href="css/styles.css" />
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Reestructuración DMD</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="css/styles-improved.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="contenedor-simulador fade-in">
-    <div class="header-simulador">
-      <img src="assets/DMD-LOGO.png" alt="Logo DMD" class="logo apple-logo" />
-      <h1>DMD - Simulador de Reestructuración</h1>
-    </div>
-    
-    <div class="campo">
-      <label for="nombreDeudor">Nombre del cliente:</label>
-      <input type="text" id="nombreDeudor" placeholder="Ej: Juan Pérez" />
+    <div id="indicadorCarga">
+        <div class="spinner"></div>
+        <p id="mensajeCarga">Cargando...</p>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>N° Contrato</th>
-          <th>Tipo Producto</th>
-          <th>Entidad</th>
-          <th>Importe de deuda (€)</th>
-          <th>% Descuento</th>
-          <th>Importe con descuento (€)</th>
-          <th>Eliminar</th>
-        </tr>
-      </thead>
-      <tbody id="tablaDeudas">
-        <!-- Filas dinámicas generadas por JavaScript -->
-      </tbody>
-    </table>
-
-    <div class="button-group">
-      <button class="btn btn-primario" id="btnAgregarFila">Añadir fila</button>
-      <button class="btn btn-primario" id="btnCalcular">Calcular</button>
-      <button class="btn btn-secundario" id="btnReAnalizar">Re-Analizar</button>
-    </div>
-
-    <div class="campo tooltip">
-      <label for="numCuotas">Nº de cuotas:</label>
-      <input type="number" id="numCuotas" placeholder="12" value="12" min="1" />
-      <span class="tooltiptext">Número de cuotas mensuales para el pago</span>
-    </div>
-
-    <div class="resultado-final" id="resultadoFinal" style="display: none;">
-      <h3>Resultado del análisis</h3>
-      <p id="resultadoTotalAPagar"><strong>Total a Pagar:</strong> €0.00</p>
-    </div>
-
-    <button class="btn btn-secundario" id="btnMostrarHistorial">Mostrar Historial</button>
-  </div>
-
-  <!-- Contenedor externo del plan de liquidación (oculto al inicio) -->
-  <div class="plan-container-outer" id="planContainerOuter" style="display: none;">
-    <div class="button-group">
-      <button class="btn-descargar-plan" id="btnDescargarPlan">Descargar PDF</button>
-      <button class="btn-contratar-plan" id="btnContratar">Contratar Plan</button>
-      <button class="btn-secundario" id="btnEditarContrato" style="display: none;">Editar Contrato</button>
-    </div>
-
-    <!-- Plan de liquidación completo -->
-    <div class="plan-container" id="plan-de-liquidacion">
-      <div class="plan-header">
-        <img src="assets/DMD-LOGO.png" alt="Logo DMD" class="logo" />
-        <h2>Plan de Liquidación</h2>
-        <p>Folio: <span id="plan-folio"></span> | Fecha: <span id="plan-fecha"></span></p>
-        <p>Nombre: <span id="plan-nombre-deudor"></span></p>
-        <p>Nº de Deudas: <span id="plan-num-deudas"></span></p>
-      </div>
-      
-      <div class="plan-summary">
-        <div class="plan-card">
-          <h3>Lo que debes</h3>
-          <p id="plan-deuda-original"></p>
+    <header>
+        <div class="logo-container">
+            <img src="assets/DMD-LOGO.png" alt="Logo DMD" class="logo">
         </div>
-        <div class="plan-card">
-          <h3>Lo que pagarías</h3>
-          <p id="plan-deuda-descontada"></p>
+        <h1>Simulador de Reestructuración</h1>
+    </header>
+
+    <main>
+        <section id="simulador">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Datos del Cliente</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="nombreDeudor">Nombre del Cliente:</label>
+                        <input type="text" id="nombreDeudor" placeholder="Nombre completo">
+                    </div>
+                    <div class="form-group">
+                        <label for="numCuotas">Número de Cuotas:</label>
+                        <input type="number" id="numCuotas" value="12" min="1" max="120">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Deudas a Reestructurar</h2>
+                    <button id="btnAgregarFila" class="btn-primary">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Agregar Deuda
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="tabla-deudas">
+                            <thead>
+                                <tr>
+                                    <th>Número Contrato</th>
+                                    <th>Tipo Producto</th>
+                                    <th>Entidad</th>
+                                    <th>Importe Deuda</th>
+                                    <th>% Descuento</th>
+                                    <th>Importe con Descuento</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaDeudas">
+                                <!-- Filas agregadas dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button id="btnCalcular" class="btn-primary">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M9 7h6m-6 4h6m-6 4h6M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                        </svg>
+                        Calcular
+                    </button>
+                    <button id="btnReAnalizar" class="btn-secondary">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                            <path d="M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                        </svg>
+                        Reiniciar
+                    </button>
+                    <button id="btnMostrarHistorial" class="btn-secondary">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                        </svg>
+                        Historial
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultadoFinal" class="card" style="display: none;">
+                <div class="card-header">
+                    <h2>Resultado</h2>
+                </div>
+                <div class="card-body">
+                    <p id="resultadoTotalAPagar" class="resultado-total"></p>
+                </div>
+            </div>
+        </section>
+
+        <div id="planContainerOuter" style="display: none;">
+            <div id="plan-de-liquidacion">
+                <div class="plan-header">
+                    <div class="plan-logo">
+                        <img src="assets/DMD-LOGO.png" alt="Logo DMD" class="logo">
+                    </div>
+                    <h2>Plan de Liquidación de Deudas</h2>
+                </div>
+
+                <div class="plan-info-cliente">
+                    <div class="plan-info-grupo">
+                        <div class="plan-info-item">
+                            <span class="plan-label">Cliente:</span>
+                            <span id="plan-nombre-deudor" class="plan-value">Nombre del Cliente</span>
+                        </div>
+                        <div class="plan-info-item">
+                            <span class="plan-label">Número de Deudas:</span>
+                            <span id="plan-num-deudas" class="plan-value">0</span>
+                        </div>
+                        <div class="plan-info-item">
+                            <span class="plan-label">Deuda Total:</span>
+                            <span id="plan-deuda-total" class="plan-value">€0.00</span>
+                        </div>
+                    </div>
+                    <div class="plan-info-grupo">
+                        <div class="plan-info-item">
+                            <span class="plan-label">Folio:</span>
+                            <span id="plan-folio" class="plan-value">FOLIO-000000</span>
+                        </div>
+                        <div class="plan-info-item">
+                            <span class="plan-label">Fecha:</span>
+                            <span id="plan-fecha" class="plan-value">01/01/2023</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plan-resumen">
+                    <div class="plan-grafico-container">
+                        <canvas id="myChart"></canvas>
+                        <div class="plan-grafico-leyenda">
+                            <div class="leyenda-item">
+                                <span class="leyenda-color" style="background-color: #0071e3;"></span>
+                                <span class="leyenda-texto">Lo que pagarías</span>
+                            </div>
+                            <div class="leyenda-item">
+                                <span class="leyenda-color" style="background-color: #34c759;"></span>
+                                <span class="leyenda-texto">Te ahorras</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="plan-resumen-datos">
+                        <div class="plan-resumen-item">
+                            <span class="plan-resumen-label">Lo que debes:</span>
+                            <span id="plan-lo-que-debes" class="plan-resumen-value">€0.00</span>
+                        </div>
+                        <div class="plan-resumen-item">
+                            <span class="plan-resumen-label">Lo que pagarías:</span>
+                            <span id="plan-lo-que-pagarias" class="plan-resumen-value">€0.00</span>
+                        </div>
+                        <div class="plan-resumen-item destacado">
+                            <span class="plan-resumen-label">Te ahorras:</span>
+                            <span id="plan-ahorro" class="plan-resumen-value">€0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plan-detalles">
+                    <h3>Detalles del Plan</h3>
+                    <div class="plan-detalles-grid">
+                        <div class="plan-detalle-item">
+                            <div class="plan-detalle-icono">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                </svg>
+                            </div>
+                            <div class="plan-detalle-info">
+                                <span class="plan-detalle-label">Duración</span>
+                                <span id="plan-duracion" class="plan-detalle-value">12 meses</span>
+                            </div>
+                        </div>
+                        <div class="plan-detalle-item">
+                            <div class="plan-detalle-icono">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                </svg>
+                            </div>
+                            <div class="plan-detalle-info">
+                                <span class="plan-detalle-label">Cuota Mensual</span>
+                                <span id="plan-cuota-mensual" class="plan-detalle-value">€0.00</span>
+                            </div>
+                        </div>
+                        <div class="plan-detalle-item">
+                            <div class="plan-detalle-icono">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                    <path d="M7 7h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                </svg>
+                            </div>
+                            <div class="plan-detalle-info">
+                                <span class="plan-detalle-label">Descuento Total</span>
+                                <span id="plan-descuento-total" class="plan-detalle-value">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plan-tabla-container">
+                    <h3>Desglose de Deudas</h3>
+                    <table class="plan-tabla">
+                        <thead>
+                            <tr>
+                                <th>Entidad</th>
+                                <th>Deuda Original</th>
+                                <th>Deuda con Descuento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="plan-tabla-body">
+                            <!-- Filas agregadas dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="plan-footer">
+                    <p>Este plan es una simulación y está sujeto a aprobación final.</p>
+                    <p>Para más información, contacte con su asesor financiero.</p>
+                </div>
+            </div>
+
+            <div class="plan-actions">
+                <button id="btnDescargarPlan" class="btn-primary">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    </svg>
+                    Descargar PDF
+                </button>
+                <button id="btnContratar" class="btn-success">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    </svg>
+                    Contratar Plan
+                </button>
+                <button id="btnEditarContrato" class="btn-secondary" style="display: none;">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7m-4-7l4-4m-4 4l-8 8v4h4l8-8m0-4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    </svg>
+                    Editar Contrato
+                </button>
+            </div>
         </div>
-        <div class="plan-card">
-          <h3>Te ahorrarás</h3>
-          <p id="plan-ahorro"></p>
+
+        <div id="historialContainer" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Historial de Contratos</h2>
+                    <button id="btnCerrarHistorial" class="btn-cerrar">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="tabla-historial">
+                            <thead>
+                                <tr>
+                                    <th>Folio</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Deudas</th>
+                                    <th>Deuda Original</th>
+                                    <th>Deuda Descontada</th>
+                                    <th>Ahorro</th>
+                                    <th>Total a Pagar</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historialBody">
+                                <!-- Filas agregadas dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </main>
 
-      <div class="chart-container">
-        <canvas id="chartDeuda"></canvas>
-      </div>
+    <footer>
+        <p>&copy; 2023 DMD - Todos los derechos reservados</p>
+    </footer>
 
-      <div class="plan-cards-row">
-        <div class="plan-card">
-          <h3>Descuento total</h3>
-          <p id="plan-porcentaje-descuento"></p>
-        </div>
-        <div class="plan-card">
-          <h3>Cuota Mensual</h3>
-          <p id="plan-cuota-mensual"></p>
-        </div>
-        <div class="plan-card">
-          <h3>Duración (meses)</h3>
-          <p id="plan-duracion-meses"></p>
-        </div>
-      </div>
-
-      <div class="tabla-deudas-container">
-        <h3>Detalle de Deudas</h3>
-        <table class="tabla-deudas">
-          <thead>
-            <tr>
-              <th>Entidad</th>
-              <th>Deuda Original</th>
-              <th>Deuda c/Descuento</th>
-            </tr>
-          </thead>
-          <tbody id="plan-tabla-body">
-            <!-- Se llena dinámicamente -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="plan-legal">
-        <p>Este plan de liquidación es una oferta válida por 3 días hábiles, sujeta a verificación interna. El porcentaje de descuento puede variar de acuerdo con las políticas de la entidad.</p>
-        <p>En caso de aprobarse, se reflejará en un único pago o en cuotas según se especifique en este plan. Los valores mostrados se ofrecen a título informativo y no constituyen un compromiso legal hasta su formalización.</p>
-      </div>
-
-      <div class="plan-footer">
-        <p>Asesor responsable: Nombre del asesor</p>
-        <p>Email de la empresa: info@dmd.com</p>
-        <p>Dirección: Calle Ejemplo, 123, Ciudad</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Contenedor del historial (modal) -->
-  <div id="historialContainer" class="historial-container" style="display: none;">
-    <h2>Historial de Simulaciones</h2>
-    <table class="tabla-historial">
-      <thead>
-        <tr>
-          <th>Folio</th>
-          <th>Fecha</th>
-          <th>Nombre</th>
-          <th># Deudas</th>
-          <th>Deuda Original</th>
-          <th>Deuda Descontada</th>
-          <th>Ahorro</th>
-          <th>Total a Pagar</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaHistorial">
-        <!-- Llenado dinámico -->
-      </tbody>
-    </table>
-    <button class="btn btn-secundario" id="btnCerrarHistorial">Cerrar Historial</button>
-  </div>
-
-  <!-- Indicador de carga (overlay) -->
-  <div id="indicadorCarga" class="cargando" style="display: none;">
-    <div class="loader"></div>
-    <div id="mensajeCarga" class="mensaje-carga">Procesando...</div>
-  </div>
-
-  <!-- Librerías (si las tienes en la carpeta libs) -->
-  <script src="libs/html2canvas.min.js"></script>
-  <script src="libs/jspdf.umd.min.js"></script>
-  <script src="libs/html2pdf.bundle.min.js"></script>
-
-  <!-- Script principal -->
-  <script src="js/main.js"></script>
+    <!-- Scripts -->
+    <script src="libs/html2canvas.min.js"></script>
+    <script src="libs/jspdf.umd.min.js"></script>
+    <script src="libs/html2pdf.bundle.min.js"></script>
+    <script src="js/main-improved.js"></script>
 </body>
 </html>
